@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
-import { Plus, Pencil, Check, X } from 'lucide-react'
+import { Plus, Pencil, Check, X, Trash2 } from 'lucide-react'
 import { useAdminProducts, type ProductInput } from '@/hooks/useAdminProducts'
 import { ProductForm } from '@/components/admin/ProductForm'
 import { Modal } from '@/components/ui/Modal'
@@ -168,7 +168,14 @@ export function Stock() {
                 onClick={() => { setEditingProduct(product); setFormOpen(true) }}
                 className="text-xs font-subtitle text-texto/40 hover:text-rosa transition-colors shrink-0"
               >
-                Editar produto
+                Editar
+              </button>
+              <button
+                onClick={() => handleDeleteProduct(product)}
+                className="text-texto/30 hover:text-red-500 transition-colors shrink-0"
+                aria-label="Excluir produto"
+              >
+                <Trash2 size={14} />
               </button>
             </div>
           ))}
