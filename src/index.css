@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Tan Pearl';
+  src:
+    url('/fonts/TanPearl.woff2') format('woff2'),
+    url('/fonts/TanPearl.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  @apply bg-fundo text-texto font-body;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply font-title;
+}
+
+#print-footer {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #print-root,
+  #print-root * {
+    visibility: visible;
+  }
+
+  #print-root {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+
+  #print-root * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border-color: #ccc !important;
+  }
+
+  .print-section {
+    page-break-before: always;
+  }
+
+  .print-section:first-of-type {
+    page-break-before: avoid;
+  }
+
+  #print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: #666 !important;
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx oxlint *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST \"http://localhost:3001/api/webhook/mercadopago?data.id=12345&type=payment\" -H \"Content-Type: application/json\" -d '{\"type\":\"payment\",\"data\":{\"id\":\"12345\"}}')",
+      "Read(//tmp/**)",
+      "Bash(npx tsx *)",
+      "Bash(netstat -ano)",
+      "Bash(xargs -I{} wc -l {})",
+      "Bash(cat src/lib/supabase.ts)",
+      "Bash(cat src/types.ts)",
+      "Bash(cat src/types/index.ts)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node -e \"console.log\\(require\\('lucide-react'\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(echo \"lint exit: $?\")",
+      "Bash(echo \"tsc exit: $?\")",
+      "Bash(npm install *)",
+      "Bash(tasklist)",
+      "Bash(ngrok version *)",
+      "Bash(cat \"C:\\\\Users\\\\gilso.DESKTOP-KUIAARH\\\\AppData\\\\Local\\\\ngrok\\\\ngrok.yml\" 2>&1 | grep -v \"authtoken\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://monosepalous-colene-unsuccessful.ngrok-free.dev/api/webhook/mercadopago -X POST -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(taskkill //PID 15712 //F)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
