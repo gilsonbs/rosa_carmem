@@ -1,4 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
+import { WebSocket } from 'ws'
+
+// Node 20 não tem WebSocket nativo; supabase-js realtime precisa dele
+if (!('WebSocket' in globalThis)) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).WebSocket = WebSocket
+}
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
