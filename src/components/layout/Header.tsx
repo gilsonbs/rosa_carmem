@@ -53,7 +53,7 @@ export function Header() {
           </nav>
 
           <Link to="/" className="md:col-start-2 md:justify-self-center">
-            <img src="/logo.png" alt="Rosa Carmen" className="h-10 w-auto" />
+            <img src="/logo.png" alt="Rosa Carmen" className="h-14 w-auto" />
           </Link>
 
           <div className="md:col-start-3 md:justify-self-end flex items-center gap-4">
