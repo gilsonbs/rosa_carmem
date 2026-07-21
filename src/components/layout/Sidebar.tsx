@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   Package,
   Truck,
+  Images,
 } from 'lucide-react'
 
 const links = [
@@ -18,6 +19,7 @@ const links = [
   { to: '/admin/produtos', label: 'Produtos', icon: ShoppingBag },
   { to: '/admin/stock', label: 'Estoque', icon: Package },
   { to: '/admin/delivery', label: 'Entregas', icon: Truck },
+  { to: '/admin/hero', label: 'Hero / Carrossel', icon: Images },
 ]
 
 interface SidebarProps {

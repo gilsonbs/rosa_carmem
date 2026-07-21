@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
 import type { ProductInput } from '@/hooks/useAdminProducts'
 import type { Product } from '@/types'
+import { CATEGORIES } from '@/utils/categories'
 
 interface ProductFormProps {
   initialProduct?: Product | null
@@ -20,6 +21,7 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
   const [description, setDescription] = useState(initialProduct?.description ?? '')
   const [price, setPrice] = useState(initialProduct ? String(initialProduct.price) : '')
   const [imageUrl, setImageUrl] = useState(initialProduct?.image_url ?? '')
+  const [category, setCategory] = useState(initialProduct?.category ?? '')
   const [featured, setFeatured] = useState(initialProduct?.featured ?? false)
   const [active, setActive] = useState(initialProduct?.active ?? true)
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +56,7 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
         image_url: imageUrl.trim() || null,
         featured,
         active,
+        category: category || null,
       })
     } finally {
       setSubmitting(false)
@@ -131,6 +134,25 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
           placeholder="ou cole a URL da imagem"
         />
       </div>
+      <div>
+        <label className={labelClasses} htmlFor="category">
+          Categoria
+        </label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className={inputClasses}
+        >
+          <option value="">Sem categoria</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="flex gap-6">
         <label className="flex items-center gap-2 text-sm font-body text-texto/80">
           <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />

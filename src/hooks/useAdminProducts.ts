@@ -12,6 +12,7 @@ export interface ProductInput {
   image_url: string | null
   featured: boolean
   active: boolean
+  category: string | null
 }
 
 export function useAdminProducts() {

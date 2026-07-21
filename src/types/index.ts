@@ -17,6 +17,7 @@ export interface Product {
   featured: boolean
   active: boolean
   stock: number
+  category: string | null
   created_at: string
 }
 

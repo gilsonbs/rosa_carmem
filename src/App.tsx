@@ -17,6 +17,7 @@ import { Kanban } from '@/pages/admin/Kanban'
 import { Produtos } from '@/pages/admin/Produtos'
 import { Stock } from '@/pages/admin/Stock'
 import { Delivery } from '@/pages/admin/Delivery'
+import { HeroConfig } from '@/pages/admin/HeroConfig'
 import { Login } from '@/pages/admin/Login'
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
             <Route path="produtos" element={<Produtos />} />
             <Route path="stock" element={<Stock />} />
             <Route path="delivery" element={<Delivery />} />
+            <Route path="hero" element={<HeroConfig />} />
           </Route>
         </Routes>
       </BrowserRouter>
