@@ -25,6 +25,9 @@ export function CategoryStrip() {
       navigate('/')
     } else {
       navigate(`/?categoria=${value}`)
+      setTimeout(() => {
+        document.getElementById(`cat-${value}`)?.scrollIntoView({ behavior: 'smooth' })
+      }, 50)
     }
   }
 
