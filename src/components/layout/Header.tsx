@@ -26,18 +26,12 @@ export function Header() {
     navigate(`/?categoria=${value}`)
     setMenuOpen(false)
     setCategoriesOpen(false)
-    setTimeout(() => {
-      document.getElementById('presentes')?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
   }
 
   function goToAll() {
     navigate('/')
     setMenuOpen(false)
     setCategoriesOpen(false)
-    setTimeout(() => {
-      document.getElementById('presentes')?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
   }
 
   return (

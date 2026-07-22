@@ -13,8 +13,10 @@ export function useProducts() {
     async function fetchProducts() {
       setLoading(true)
       const { data, error } = await supabase
-        .from('active_products')
+        .from('products')
         .select('*')
+        .eq('active', true)
+        .gt('stock', 0)
         .order('created_at', { ascending: false })
 
       if (!active) return

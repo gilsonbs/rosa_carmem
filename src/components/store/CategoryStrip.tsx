@@ -1,5 +1,5 @@
 import type { ElementType } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Flower2, ShoppingBasket, Briefcase, Sparkles, Coffee, Zap } from 'lucide-react'
 import { useDynamicCategories } from '@/hooks/useDynamicCategories'
 
@@ -16,13 +16,16 @@ const DEFAULT_GRADIENT = 'from-rosa to-blush'
 
 export function CategoryStrip() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { categories } = useDynamicCategories()
+  const activeCategory = searchParams.get('categoria')
 
   function goToCategory(value: string) {
-    navigate(`/?categoria=${value}`)
-    setTimeout(() => {
-      document.getElementById('presentes')?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
+    if (activeCategory === value) {
+      navigate('/')
+    } else {
+      navigate(`/?categoria=${value}`)
+    }
   }
 
   return (
@@ -32,13 +35,14 @@ export function CategoryStrip() {
           {categories.map((cat) => {
             const meta = CATEGORY_META[cat.value]
             const Icon = meta?.icon ?? Sparkles
+            const isActive = activeCategory === cat.value
             return (
               <button
                 key={cat.value}
                 onClick={() => goToCategory(cat.value)}
                 className="flex flex-col items-center gap-3 shrink-0 group"
               >
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200 ${isActive ? 'ring-2 ring-rosa ring-offset-2' : ''}`}>
                   {cat.image ? (
                     <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
                   ) : (
@@ -47,7 +51,7 @@ export function CategoryStrip() {
                     </div>
                   )}
                 </div>
-                <span className="font-subtitle text-[10px] md:text-xs uppercase tracking-wider text-texto/60 group-hover:text-rosa transition-colors whitespace-nowrap">
+                <span className={`font-subtitle text-[10px] md:text-xs uppercase tracking-wider transition-colors whitespace-nowrap ${isActive ? 'text-rosa font-semibold' : 'text-texto/60 group-hover:text-rosa'}`}>
                   {cat.label}
                 </span>
               </button>
