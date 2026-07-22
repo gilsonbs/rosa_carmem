@@ -8,6 +8,7 @@ import { ProductGrid } from '@/components/store/ProductGrid'
 import { ProductModal } from '@/components/store/ProductModal'
 import { CartDrawer } from '@/components/store/CartDrawer'
 import { getCategoryLabel } from '@/utils/categories'
+import { CategoryStrip } from '@/components/store/CategoryStrip'
 import type { Product } from '@/types'
 
 export function Home() {
@@ -32,6 +33,8 @@ export function Home() {
         showPrice={heroSettings.show_price}
         onSelectProduct={setSelectedProduct}
       />
+
+      <CategoryStrip />
 
       <section className="py-16 px-6 bg-[#FDF0F3]">
         <div className="max-w-6xl mx-auto">
