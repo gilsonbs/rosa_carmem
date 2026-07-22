@@ -7,13 +7,14 @@ import { FeaturedProducts } from '@/components/store/FeaturedProducts'
 import { ProductGrid } from '@/components/store/ProductGrid'
 import { ProductModal } from '@/components/store/ProductModal'
 import { CartDrawer } from '@/components/store/CartDrawer'
-import { getCategoryLabel } from '@/utils/categories'
+import { useDynamicCategories } from '@/hooks/useDynamicCategories'
 import { CategoryStrip } from '@/components/store/CategoryStrip'
 import type { Product } from '@/types'
 
 export function Home() {
   const { products, featuredProducts, loading, error } = useProducts()
   const { settings: heroSettings, heroProducts } = useHeroSettings()
+  const { getCategoryLabel } = useDynamicCategories()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
   const [searchParams] = useSearchParams()

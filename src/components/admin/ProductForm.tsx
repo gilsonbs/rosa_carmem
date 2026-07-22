@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
 import type { ProductInput } from '@/hooks/useAdminProducts'
 import type { Product } from '@/types'
-import { CATEGORIES } from '@/utils/categories'
+import { useDynamicCategories } from '@/hooks/useDynamicCategories'
 
 interface ProductFormProps {
   initialProduct?: Product | null
@@ -21,6 +21,7 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
   const [description, setDescription] = useState(initialProduct?.description ?? '')
   const [price, setPrice] = useState(initialProduct ? String(initialProduct.price) : '')
   const [imageUrl, setImageUrl] = useState(initialProduct?.image_url ?? '')
+  const { categories } = useDynamicCategories()
   const [category, setCategory] = useState(initialProduct?.category ?? '')
   const [featured, setFeatured] = useState(initialProduct?.featured ?? false)
   const [active, setActive] = useState(initialProduct?.active ?? true)
@@ -145,7 +146,7 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
           className={inputClasses}
         >
           <option value="">Sem categoria</option>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <option key={cat.value} value={cat.value}>
               {cat.label}
             </option>

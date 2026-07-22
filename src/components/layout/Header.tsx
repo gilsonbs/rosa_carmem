@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { CartDrawer } from '@/components/store/CartDrawer'
-import { CATEGORIES } from '@/utils/categories'
+import { useDynamicCategories } from '@/hooks/useDynamicCategories'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
@@ -12,6 +12,7 @@ export function Header() {
   const [cartOpen, setCartOpen] = useState(false)
   const { totalItems } = useCart()
   const navigate = useNavigate()
+  const { categories } = useDynamicCategories()
 
   useEffect(() => {
     function handleScroll() {
@@ -80,7 +81,7 @@ export function Header() {
                   Todos os presentes
                 </button>
                 <div className="border-t border-blush/30 my-1" />
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <button
                     key={cat.value}
                     onClick={() => goToCategory(cat.value)}
@@ -141,7 +142,7 @@ export function Header() {
                 <button onClick={goToAll} className="py-1.5 text-xs text-texto/60 hover:text-rosa uppercase tracking-wider">
                   Todos
                 </button>
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <button
                     key={cat.value}
                     onClick={() => goToCategory(cat.value)}

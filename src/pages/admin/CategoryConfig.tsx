@@ -1,22 +1,45 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Upload, X } from 'lucide-react'
+import { Upload, X, Plus, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useCategoryImages } from '@/hooks/useCategoryImages'
-import { CATEGORIES } from '@/utils/categories'
+import { useDynamicCategories, slugify, type DynamicCategory } from '@/hooks/useDynamicCategories'
+import { CATEGORY_META } from '@/components/store/CategoryStrip'
 
 export function CategoryConfig() {
-  const { images, loading, saving, saveImages, uploadCategoryImage } = useCategoryImages()
-  const [draft, setDraft] = useState<Record<string, string>>({})
+  const { categories, loading, saving, saveCategories, uploadCategoryImage } = useDynamicCategories()
+  const [draft, setDraft] = useState<DynamicCategory[]>([])
   const [uploading, setUploading] = useState<string | null>(null)
+  const [newLabel, setNewLabel] = useState('')
 
-  const current = { ...images, ...draft }
+  useEffect(() => {
+    if (!loading) setDraft(categories)
+  }, [loading, categories])
 
-  async function handleUpload(categoryValue: string, file: File) {
-    setUploading(categoryValue)
+  function updateLabel(value: string, label: string) {
+    setDraft((prev) => prev.map((c) => (c.value === value ? { ...c, label } : c)))
+  }
+
+  function removeCategory(value: string) {
+    setDraft((prev) => prev.filter((c) => c.value !== value))
+  }
+
+  function addCategory() {
+    const trimmed = newLabel.trim()
+    if (!trimmed) return
+    const value = slugify(trimmed)
+    if (draft.some((c) => c.value === value)) {
+      toast.error('Já existe uma categoria com esse nome')
+      return
+    }
+    setDraft((prev) => [...prev, { value, label: trimmed }])
+    setNewLabel('')
+  }
+
+  async function handleUpload(catValue: string, file: File) {
+    setUploading(catValue)
     try {
       const url = await uploadCategoryImage(file)
-      setDraft((prev) => ({ ...prev, [categoryValue]: url }))
+      setDraft((prev) => prev.map((c) => (c.value === catValue ? { ...c, image: url } : c)))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao enviar imagem')
     } finally {
@@ -24,82 +47,81 @@ export function CategoryConfig() {
     }
   }
 
-  function handleRemove(categoryValue: string) {
-    setDraft((prev) => ({ ...prev, [categoryValue]: '' }))
+  function removeImage(catValue: string) {
+    setDraft((prev) => prev.map((c) => (c.value === catValue ? { ...c, image: undefined } : c)))
   }
 
   async function handleSave() {
+    const invalid = draft.some((c) => !c.label.trim())
+    if (invalid) { toast.error('Preencha o nome de todas as categorias'); return }
     try {
-      await saveImages(current)
-      setDraft({})
-      toast.success('Imagens salvas!')
+      await saveCategories(draft)
+      toast.success('Categorias salvas!')
     } catch {
       toast.error('Erro ao salvar')
     }
   }
 
-  if (loading) {
-    return <p className="font-body text-sm text-texto/60 p-6">Carregando...</p>
-  }
+  if (loading) return <p className="font-body text-sm text-texto/60 p-6">Carregando...</p>
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-title text-2xl text-texto mb-1">Imagens das Categorias</h1>
+        <h1 className="font-title text-2xl text-texto mb-1">Categorias</h1>
         <p className="font-body text-sm text-texto/60">
-          Adicione uma foto para cada categoria. Se não houver foto, o ícone colorido será exibido.
+          Edite os nomes, adicione fotos ou crie novas categorias. As categorias aparecem no menu e nos círculos da home.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {CATEGORIES.map((cat) => {
-          const imageUrl = current[cat.value]
+      <div className="flex flex-col gap-3">
+        {draft.map((cat) => {
+          const meta = CATEGORY_META[cat.value]
           const isUploading = uploading === cat.value
 
           return (
-            <div
-              key={cat.value}
-              className="flex items-center gap-4 p-4 bg-white rounded-xl border border-blush/40"
-            >
-              {/* Preview */}
-              <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 bg-blush/30 flex items-center justify-center">
-                {imageUrl ? (
-                  <img src={imageUrl} alt={cat.label} className="w-full h-full object-cover" />
+            <div key={cat.value} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-blush/40">
+              {/* Drag handle placeholder */}
+              <GripVertical size={16} className="text-texto/20 shrink-0" />
+
+              {/* Circle preview */}
+              <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-blush/30 flex items-center justify-center">
+                {cat.image ? (
+                  <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
+                ) : meta ? (
+                  <div className={`w-full h-full bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
+                    <meta.icon size={18} className="text-white" strokeWidth={1.5} />
+                  </div>
                 ) : (
                   <span className="font-subtitle text-xs text-texto/40 uppercase">{cat.label[0]}</span>
                 )}
               </div>
 
-              {/* Label */}
-              <div className="flex-1 min-w-0">
-                <p className="font-subtitle text-sm uppercase tracking-wider text-texto mb-1">
-                  {cat.label}
-                </p>
-                {imageUrl ? (
-                  <p className="font-body text-xs text-texto/40 truncate">{imageUrl}</p>
-                ) : (
-                  <p className="font-body text-xs text-texto/40">Sem imagem — usando ícone</p>
-                )}
-              </div>
+              {/* Name input */}
+              <input
+                value={cat.label}
+                onChange={(e) => updateLabel(cat.value, e.target.value)}
+                className="flex-1 min-w-0 rounded-lg border border-blush/60 px-3 py-2 font-body text-sm text-texto focus:outline-none focus:ring-2 focus:ring-rosa/40 focus:border-rosa"
+                placeholder="Nome da categoria"
+              />
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0">
-                {imageUrl && (
+              {/* Photo actions */}
+              <div className="flex items-center gap-1 shrink-0">
+                {cat.image && (
                   <button
                     type="button"
-                    onClick={() => handleRemove(cat.value)}
-                    title="Remover imagem"
-                    className="p-1.5 rounded-lg text-texto/40 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    onClick={() => removeImage(cat.value)}
+                    title="Remover foto"
+                    className="p-1.5 rounded-lg text-texto/30 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 )}
                 <label
                   htmlFor={`upload-${cat.value}`}
-                  className={`flex items-center gap-1.5 cursor-pointer rounded-lg border border-blush/60 px-3 py-1.5 font-subtitle text-xs uppercase tracking-wider text-texto/70 hover:border-rosa hover:text-rosa transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={`flex items-center gap-1 cursor-pointer rounded-lg border border-blush/60 px-2.5 py-1.5 font-subtitle text-[11px] uppercase tracking-wider text-texto/60 hover:border-rosa hover:text-rosa transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
                 >
-                  <Upload size={13} />
-                  {isUploading ? 'Enviando...' : 'Foto'}
+                  <Upload size={12} />
+                  {isUploading ? '...' : 'Foto'}
                 </label>
                 <input
                   id={`upload-${cat.value}`}
@@ -113,10 +135,35 @@ export function CategoryConfig() {
                     e.target.value = ''
                   }}
                 />
+
+                {/* Remove category */}
+                <button
+                  type="button"
+                  onClick={() => removeCategory(cat.value)}
+                  title="Remover categoria"
+                  className="p-1.5 rounded-lg text-texto/30 hover:text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <X size={16} />
+                </button>
               </div>
             </div>
           )
         })}
+      </div>
+
+      {/* Add new category */}
+      <div className="flex gap-2 mt-4">
+        <input
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addCategory()}
+          placeholder="Nome da nova categoria..."
+          className="flex-1 rounded-lg border border-blush/60 px-3 py-2 font-body text-sm text-texto focus:outline-none focus:ring-2 focus:ring-rosa/40 focus:border-rosa"
+        />
+        <Button type="button" variant="outline" onClick={addCategory} disabled={!newLabel.trim()}>
+          <Plus size={16} />
+          Adicionar
+        </Button>
       </div>
 
       <div className="mt-6 flex justify-end">

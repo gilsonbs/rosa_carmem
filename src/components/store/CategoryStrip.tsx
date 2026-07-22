@@ -1,9 +1,9 @@
+import type { ElementType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Flower2, ShoppingBasket, Briefcase, Sparkles, Coffee, Zap } from 'lucide-react'
-import { CATEGORIES } from '@/utils/categories'
-import { useCategoryImages } from '@/hooks/useCategoryImages'
+import { useDynamicCategories } from '@/hooks/useDynamicCategories'
 
-const CATEGORY_META: Record<string, { icon: React.ElementType; gradient: string }> = {
+export const CATEGORY_META: Record<string, { icon: ElementType; gradient: string }> = {
   flores: { icon: Flower2, gradient: 'from-rose-300 to-pink-400' },
   cestas: { icon: ShoppingBasket, gradient: 'from-amber-300 to-orange-400' },
   corporativo: { icon: Briefcase, gradient: 'from-slate-400 to-slate-500' },
@@ -12,9 +12,11 @@ const CATEGORY_META: Record<string, { icon: React.ElementType; gradient: string 
   pronta_entrega: { icon: Zap, gradient: 'from-emerald-300 to-teal-400' },
 }
 
+const DEFAULT_GRADIENT = 'from-rosa to-blush'
+
 export function CategoryStrip() {
   const navigate = useNavigate()
-  const { images } = useCategoryImages()
+  const { categories } = useDynamicCategories()
 
   function goToCategory(value: string) {
     navigate(`/?categoria=${value}`)
@@ -27,7 +29,7 @@ export function CategoryStrip() {
     <section className="py-10 bg-white border-b border-blush/30">
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex gap-6 md:gap-10 overflow-x-auto scrollbar-hide justify-start md:justify-center pb-1">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const meta = CATEGORY_META[cat.value]
             const Icon = meta?.icon ?? Sparkles
             return (
@@ -37,14 +39,10 @@ export function CategoryStrip() {
                 className="flex flex-col items-center gap-3 shrink-0 group"
               >
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
-                  {images[cat.value] ? (
-                    <img
-                      src={images[cat.value]}
-                      alt={cat.label}
-                      className="w-full h-full object-cover"
-                    />
+                  {cat.image ? (
+                    <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
                   ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${meta?.gradient ?? 'from-rosa to-blush'} flex items-center justify-center`}>
+                    <div className={`w-full h-full bg-gradient-to-br ${meta?.gradient ?? DEFAULT_GRADIENT} flex items-center justify-center`}>
                       <Icon size={30} className="text-white drop-shadow-sm" strokeWidth={1.5} />
                     </div>
                   )}
