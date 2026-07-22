@@ -52,7 +52,11 @@ export function useAdminProducts() {
   }
 
   async function updateProduct(id: string, input: ProductInput) {
-    const { error } = await supabase.from('products').update(input).eq('id', id)
+    // Omit category from payload when null — avoids "column not in schema cache"
+    // error on databases where migration_category.sql hasn't been run yet.
+    const { category, ...base } = input
+    const payload = category !== null ? { ...base, category } : base
+    const { error } = await supabase.from('products').update(payload).eq('id', id)
     if (error) throw new Error(error.message)
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...input } : p)))
   }
