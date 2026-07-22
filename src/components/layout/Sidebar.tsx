@@ -9,6 +9,7 @@ import {
   Package,
   Truck,
   Images,
+  LayoutGrid,
 } from 'lucide-react'
 
 const links = [
@@ -20,6 +21,7 @@ const links = [
   { to: '/admin/stock', label: 'Estoque', icon: Package },
   { to: '/admin/delivery', label: 'Entregas', icon: Truck },
   { to: '/admin/hero', label: 'Hero / Carrossel', icon: Images },
+  { to: '/admin/categorias', label: 'Categorias', icon: LayoutGrid },
 ]
 
 interface SidebarProps {

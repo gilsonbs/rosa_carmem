@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Flower2, ShoppingBasket, Briefcase, Sparkles, Coffee, Zap } from 'lucide-react'
 import { CATEGORIES } from '@/utils/categories'
+import { useCategoryImages } from '@/hooks/useCategoryImages'
 
 const CATEGORY_META: Record<string, { icon: React.ElementType; gradient: string }> = {
   flores: { icon: Flower2, gradient: 'from-rose-300 to-pink-400' },
@@ -13,6 +14,7 @@ const CATEGORY_META: Record<string, { icon: React.ElementType; gradient: string 
 
 export function CategoryStrip() {
   const navigate = useNavigate()
+  const { images } = useCategoryImages()
 
   function goToCategory(value: string) {
     navigate(`/?categoria=${value}`)
@@ -34,10 +36,18 @@ export function CategoryStrip() {
                 onClick={() => goToCategory(cat.value)}
                 className="flex flex-col items-center gap-3 shrink-0 group"
               >
-                <div
-                  className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${meta?.gradient ?? 'from-rosa to-blush'} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200`}
-                >
-                  <Icon size={30} className="text-white drop-shadow-sm" strokeWidth={1.5} />
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+                  {images[cat.value] ? (
+                    <img
+                      src={images[cat.value]}
+                      alt={cat.label}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${meta?.gradient ?? 'from-rosa to-blush'} flex items-center justify-center`}>
+                      <Icon size={30} className="text-white drop-shadow-sm" strokeWidth={1.5} />
+                    </div>
+                  )}
                 </div>
                 <span className="font-subtitle text-[10px] md:text-xs uppercase tracking-wider text-texto/60 group-hover:text-rosa transition-colors whitespace-nowrap">
                   {cat.label}
