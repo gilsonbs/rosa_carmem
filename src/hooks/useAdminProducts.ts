@@ -43,7 +43,7 @@ export function useAdminProducts() {
   async function createProduct(input: ProductInput) {
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...input, stock: 0 })
+      .insert({ ...input, stock: 1 })
       .select('*')
       .single()
 
