@@ -69,7 +69,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={goToAll}
-                className="flex items-center gap-1 hover:text-rosa transition-colors"
+                className="flex items-center gap-1 hover:text-rosa transition-colors uppercase tracking-wider"
               >
                 Presentes <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
               </button>
