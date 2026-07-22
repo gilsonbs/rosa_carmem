@@ -85,12 +85,20 @@ export function ProductModal({ product, onClose, onOpenCart }: ProductModalProps
           </button>
 
           {inCart && !added && (
-            <button
-              onClick={handleViewCart}
-              className="text-sm font-subtitle text-rosa hover:underline text-center"
-            >
-              Ver carrinho →
-            </button>
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={handleViewCart}
+                className="text-sm font-subtitle text-rosa hover:underline text-center"
+              >
+                Ver carrinho →
+              </button>
+              <button
+                onClick={onClose}
+                className="text-sm font-subtitle text-texto/40 hover:text-texto/70 transition-colors text-center"
+              >
+                Continuar comprando
+              </button>
+            </div>
           )}
         </div>
       </div>

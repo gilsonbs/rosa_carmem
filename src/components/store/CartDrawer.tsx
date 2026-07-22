@@ -62,6 +62,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           </div>
         ) : (
           <>
+            <div className="px-5 pt-3 pb-0">
+              <button
+                onClick={onClose}
+                className="text-xs font-subtitle text-texto/50 hover:text-rosa transition-colors"
+              >
+                ← Continuar comprando
+              </button>
+            </div>
             <ul className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
               {items.map(({ product, quantity }) => (
                 <li
