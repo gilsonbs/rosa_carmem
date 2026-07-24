@@ -58,16 +58,16 @@ export function HeroCarousel({
           Rosa Carmen · Boutique de Presentes
         </p>
         <h1 className="font-title text-4xl md:text-5xl text-texto mt-4">
-          Presentes que tocam o coração.
+          Presentes que transformam momentos em memórias.
         </h1>
         <p className="font-subtitle font-light text-lg text-texto/70 mt-3 max-w-xl">
-          Curadoria de presentes elegantes para os momentos que merecem ser lembrados.
+          Criamos experiências para celebrar pessoas, histórias e memórias.
         </p>
         <a
           href="#presentes"
           className="mt-8 inline-block bg-white text-texto font-subtitle font-medium uppercase tracking-wide text-sm px-8 py-3.5 rounded hover:bg-texto hover:text-white transition-colors"
         >
-          Explorar a Coleção
+          Escolher um presente
         </a>
       </section>
     )
