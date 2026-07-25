@@ -48,12 +48,12 @@ export function Header() {
           scrolled ? 'shadow-[0_2px_12px_rgba(0,0,0,0.06)]' : ''
         }`}
       >
-        <div className="max-w-6xl mx-auto px-6 py-4 relative flex items-center justify-center md:grid md:grid-cols-3">
+        <div className="max-w-6xl mx-auto px-6 py-4 grid grid-cols-3 items-center">
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Abrir menu"
-            className="md:hidden absolute left-6 text-texto"
+            className="md:hidden justify-self-start text-texto"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -98,11 +98,11 @@ export function Header() {
             </a>
           </nav>
 
-          <Link to="/" className="md:col-start-2 md:justify-self-center">
+          <Link to="/" className="justify-self-center">
             <img src="/logo.png" alt="Rosa Carmen" className="h-14 w-auto" />
           </Link>
 
-          <div className="md:col-start-3 md:justify-self-end flex items-center gap-4">
+          <div className="justify-self-end flex items-center gap-4">
             <a
               href="/fale-conosco"
               className="hidden md:inline-block font-subtitle text-xs uppercase tracking-wider text-texto/80 hover:text-rosa transition-colors"
@@ -113,7 +113,7 @@ export function Header() {
               type="button"
               onClick={() => setCartOpen(true)}
               aria-label={`Carrinho${totalItems > 0 ? ` (${totalItems} itens)` : ''}`}
-              className="absolute right-6 md:relative md:right-auto relative flex items-center text-texto/80 hover:text-rosa transition-colors"
+              className="relative flex items-center text-texto/80 hover:text-rosa transition-colors"
             >
               <ShoppingBag size={22} />
               {totalItems > 0 && (
