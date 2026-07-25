@@ -1,4 +1,4 @@
-import { Shield, Eye, Lock, Users, FileText, MessageCircle, Trash2, RefreshCw } from 'lucide-react'
+import { Shield, Eye, Lock, Users, FileText, MessageCircle, RefreshCw } from 'lucide-react'
 
 const WHATSAPP = '5522997394050'
 const EMAIL = 'contato@rosacarmen.com.br'
