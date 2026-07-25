@@ -20,7 +20,7 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="/trocas-e-devolucoes" className="hover:text-white transition-colors">
                 Trocas e devoluções
               </a>
             </li>
