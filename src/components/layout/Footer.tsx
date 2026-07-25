@@ -38,7 +38,7 @@ export function Footer() {
           </h3>
           <ul className="flex flex-col gap-2.5 font-body text-sm text-white/70">
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+              <a href="/sobre" className="hover:text-white transition-colors">
                 Sobre a Rosa Carmen
               </a>
             </li>

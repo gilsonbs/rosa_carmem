@@ -93,7 +93,7 @@ export function Header() {
               </div>
             </div>
 
-            <a href="/#sobre" className="hover:text-rosa transition-colors">
+            <a href="/sobre" className="hover:text-rosa transition-colors">
               Sobre
             </a>
           </nav>
@@ -153,10 +153,10 @@ export function Header() {
                 ))}
               </div>
             )}
-            <a href="/#sobre" onClick={() => setMenuOpen(false)} className="py-2 hover:text-rosa transition-colors uppercase tracking-wider text-xs">
+            <a href="/sobre" onClick={() => setMenuOpen(false)} className="py-2 hover:text-rosa transition-colors uppercase tracking-wider text-xs">
               Sobre
             </a>
-            <a href="/#sobre" onClick={() => setMenuOpen(false)} className="py-2 hover:text-rosa transition-colors uppercase tracking-wider text-xs">
+            <a href="/sobre" onClick={() => setMenuOpen(false)} className="py-2 hover:text-rosa transition-colors uppercase tracking-wider text-xs">
               Contato
             </a>
           </nav>
