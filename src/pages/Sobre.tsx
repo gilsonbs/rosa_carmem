@@ -21,6 +21,28 @@ const PARAGRAPHS = [
   'Porque acreditamos que os gestos passam.',
 ]
 
+function AvoCard({ src, name }: { src: string | null; name: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-rosa/8 border border-rosa/20">
+        {src ? (
+          <img
+            src={src}
+            alt={name}
+            className="w-full h-full object-cover object-top grayscale"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-rosa/40">
+            <Flower2 size={36} strokeWidth={1} />
+            <p className="font-subtitle text-xs uppercase tracking-widest">Foto em breve</p>
+          </div>
+        )}
+      </div>
+      <p className="font-title text-2xl text-texto italic">{name}</p>
+    </div>
+  )
+}
+
 export function Sobre() {
   return (
     <>
@@ -39,15 +61,15 @@ export function Sobre() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
 
-            {/* Foto */}
-            <div className="lg:sticky lg:top-24">
-              {/* Substitua o bloco abaixo por <img> quando a foto estiver disponível:
-                  <img src="/sobre-fundadora.jpg" alt="Fundadora da Rosa Carmen" className="w-full rounded-2xl object-cover shadow-md" />
-              */}
-              <div className="w-full aspect-[3/4] rounded-2xl bg-rosa/8 border border-rosa/20 flex flex-col items-center justify-center gap-4 text-rosa/50">
-                <Flower2 size={48} strokeWidth={1} />
-                <p className="font-subtitle text-xs uppercase tracking-widest">Foto em breve</p>
+            {/* Fotos das avós — sticky no desktop */}
+            <div className="lg:sticky lg:top-24 flex flex-col gap-8">
+              <div className="grid grid-cols-2 gap-6">
+                <AvoCard src="/rosa.jpg" name="Rosa" />
+                <AvoCard src="/carmen.jpeg" name="Carmen" />
               </div>
+              <p className="font-body text-sm text-texto/50 text-center italic leading-relaxed">
+                As mulheres que nos nomeiam — e que caminham conosco em cada presente.
+              </p>
             </div>
 
             {/* Texto */}
@@ -62,11 +84,7 @@ export function Sobre() {
                   return (
                     <p
                       key={i}
-                      className={
-                        isShort
-                          ? 'font-title text-lg text-texto italic'
-                          : ''
-                      }
+                      className={isShort ? 'font-title text-lg text-texto italic' : ''}
                     >
                       {p}
                     </p>
@@ -74,6 +92,7 @@ export function Sobre() {
                 })}
               </div>
             </div>
+
           </div>
         </div>
       </section>
