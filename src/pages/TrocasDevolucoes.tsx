@@ -1,4 +1,4 @@
-import { RefreshCw, Clock, CheckCircle, XCircle, MessageCircle, Package } from 'lucide-react'
+import { RefreshCw, Clock, CheckCircle, XCircle, MessageCircle, Package, Flower2 } from 'lucide-react'
 
 const WHATSAPP = '5522997394050'
 
@@ -75,7 +75,7 @@ export function TrocasDevolucoes() {
           <Section icon={XCircle} title="Quando não é possível trocar ou devolver">
             <ul className="font-body text-texto/70 text-sm leading-relaxed flex flex-col gap-2.5">
               {[
-                'Produtos perecíveis (flores naturais, alimentos frescos) — pela natureza do produto',
+                'Produtos perecíveis por desistência — veja a política específica abaixo',
                 'Itens personalizados com nome, mensagem ou arte exclusiva solicitada pelo cliente',
                 'Produtos que já foram utilizados ou com sinais evidentes de uso',
                 'Solicitação fora do prazo estabelecido',
@@ -87,6 +87,49 @@ export function TrocasDevolucoes() {
               ))}
             </ul>
           </Section>
+
+          <div className="border-t border-blush/30" />
+
+          {/* Perecíveis — seção em destaque */}
+          <div className="rounded-2xl border border-rosa/30 bg-rosa/5 p-6 flex gap-5">
+            <div className="shrink-0 w-10 h-10 rounded-full bg-rosa/15 flex items-center justify-center mt-0.5">
+              <Flower2 size={20} className="text-rosa" />
+            </div>
+            <div>
+              <h2 className="font-title text-xl text-texto mb-1">Política para produtos perecíveis</h2>
+              <p className="font-subtitle text-xs uppercase tracking-wider text-rosa mb-3">
+                Flores naturais · Alimentos frescos
+              </p>
+              <div className="font-body text-texto/70 text-sm leading-relaxed flex flex-col gap-3">
+                <p>
+                  Pela natureza perecível, não aceitamos devoluções por desistência. No entanto,{' '}
+                  <strong className="text-texto">se o produto chegar danificado, murchado ou em condição diferente do esperado</strong>,
+                  você tem direito à reposição.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <p className="font-medium text-texto">O que fazer:</p>
+                  <ol className="flex flex-col gap-2">
+                    {[
+                      'Fotografe o produto assim que receber',
+                      'Entre em contato pelo WhatsApp em até 24 horas após a entrega',
+                      'Envie as fotos e descreva o problema',
+                      'Avaliaremos e providenciaremos a reposição ou um crédito',
+                    ].map((step, i) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="shrink-0 w-5 h-5 rounded-full bg-rosa/20 text-rosa text-[10px] font-semibold font-subtitle flex items-center justify-center mt-0.5">
+                          {i + 1}
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <p className="text-xs text-texto/50">
+                  Solicitações após 24h do recebimento não poderão ser avaliadas pela impossibilidade de verificar o estado original do produto.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="border-t border-blush/30" />
 
