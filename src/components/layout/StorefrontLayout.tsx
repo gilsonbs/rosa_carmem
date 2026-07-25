@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { AnnouncementBanner } from '@/components/store/AnnouncementBanner'
+import { BenefitsStrip } from '@/components/store/BenefitsStrip'
 
 export function StorefrontLayout() {
   return (
@@ -11,6 +12,7 @@ export function StorefrontLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      <BenefitsStrip />
       <Footer />
     </div>
   )
