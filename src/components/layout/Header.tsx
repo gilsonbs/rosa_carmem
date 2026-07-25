@@ -104,7 +104,7 @@ export function Header() {
 
           <div className="md:col-start-3 md:justify-self-end flex items-center gap-4">
             <a
-              href="/#sobre"
+              href="/fale-conosco"
               className="hidden md:inline-block font-subtitle text-xs uppercase tracking-wider text-texto/80 hover:text-rosa transition-colors"
             >
               Contato

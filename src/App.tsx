@@ -6,6 +6,7 @@ import { StorefrontLayout } from '@/components/layout/StorefrontLayout'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { RequireAuth } from '@/components/layout/RequireAuth'
 import { Home } from '@/pages/Home'
+import { FaleConosco } from '@/pages/FaleConosco'
 import { Checkout } from '@/pages/Checkout'
 import { CheckoutSuccess } from '@/pages/CheckoutSuccess'
 import { CheckoutFailure } from '@/pages/CheckoutFailure'
@@ -30,6 +31,7 @@ function App() {
         <Routes>
           <Route element={<StorefrontLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/fale-conosco" element={<FaleConosco />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/failure" element={<CheckoutFailure />} />
