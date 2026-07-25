@@ -9,6 +9,7 @@ import { Home } from '@/pages/Home'
 import { FaleConosco } from '@/pages/FaleConosco'
 import { TrocasDevolucoes } from '@/pages/TrocasDevolucoes'
 import { PerguntasFrequentes } from '@/pages/PerguntasFrequentes'
+import { PoliticaPrivacidade } from '@/pages/PoliticaPrivacidade'
 import { Checkout } from '@/pages/Checkout'
 import { CheckoutSuccess } from '@/pages/CheckoutSuccess'
 import { CheckoutFailure } from '@/pages/CheckoutFailure'
@@ -36,6 +37,7 @@ function App() {
             <Route path="/fale-conosco" element={<FaleConosco />} />
             <Route path="/trocas-e-devolucoes" element={<TrocasDevolucoes />} />
             <Route path="/perguntas-frequentes" element={<PerguntasFrequentes />} />
+            <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/failure" element={<CheckoutFailure />} />
