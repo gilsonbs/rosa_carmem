@@ -18,7 +18,7 @@ const FAQ: FaqCategory[] = [
     items: [
       {
         q: 'Qual é o prazo de entrega?',
-        a: 'O prazo varia conforme a sua região e a disponibilidade do produto. Em geral, realizamos entregas em até 2 dias úteis para a região de Campos dos Goytacazes e municípios vizinhos. Para outras localidades, consulte pelo WhatsApp antes de finalizar o pedido.',
+        a: 'O prazo varia conforme a sua região e a disponibilidade do produto. Em geral, realizamos entregas em até 2 dias úteis para Rio das Ostras, Macaé, Barra de São João e Cabo Frio. Para outras localidades, consulte pelo WhatsApp antes de finalizar o pedido.',
       },
       {
         q: 'Vocês entregam no mesmo dia?',
@@ -30,7 +30,7 @@ const FAQ: FaqCategory[] = [
       },
       {
         q: 'Vocês entregam em todo o Brasil?',
-        a: 'No momento atendemos presencialmente a região de Campos dos Goytacazes e municípios próximos. Para outras cidades, entre em contato — avaliamos caso a caso.',
+        a: 'No momento atendemos presencialmente Rio das Ostras, Macaé, Barra de São João e Cabo Frio. Para outras cidades, entre em contato — avaliamos caso a caso.',
       },
     ],
   },
