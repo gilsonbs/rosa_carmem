@@ -24,6 +24,7 @@ import { Stock } from '@/pages/admin/Stock'
 import { Delivery } from '@/pages/admin/Delivery'
 import { HeroConfig } from '@/pages/admin/HeroConfig'
 import { CategoryConfig } from '@/pages/admin/CategoryConfig'
+import { AnnouncementBannerConfig } from '@/pages/admin/AnnouncementBannerConfig'
 import { Login } from '@/pages/admin/Login'
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
             <Route path="delivery" element={<Delivery />} />
             <Route path="hero" element={<HeroConfig />} />
             <Route path="categorias" element={<CategoryConfig />} />
+            <Route path="banner" element={<AnnouncementBannerConfig />} />
           </Route>
         </Routes>
       </BrowserRouter>

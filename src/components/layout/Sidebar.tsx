@@ -10,6 +10,7 @@ import {
   Truck,
   Images,
   LayoutGrid,
+  Megaphone,
 } from 'lucide-react'
 
 const links = [
@@ -22,6 +23,7 @@ const links = [
   { to: '/admin/delivery', label: 'Entregas', icon: Truck },
   { to: '/admin/hero', label: 'Hero / Carrossel', icon: Images },
   { to: '/admin/categorias', label: 'Categorias', icon: LayoutGrid },
+  { to: '/admin/banner', label: 'Banner de Anúncio', icon: Megaphone },
 ]
 
 interface SidebarProps {
