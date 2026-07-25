@@ -82,6 +82,7 @@ export function PoliticaPrivacidade() {
               </p>
               <div className="bg-white rounded-xl p-4 border border-blush/40 flex flex-col gap-1.5 mt-1">
                 <p><strong className="text-texto">Rosa Carmen Presentes</strong></p>
+                <p>CNPJ: 64.316.030/0001-94</p>
                 <p>E-mail: <a href={`mailto:${EMAIL}`} className="text-rosa hover:underline">{EMAIL}</a></p>
                 <p>WhatsApp: <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="text-rosa hover:underline">(22) 99739-4050</a></p>
                 <p>Atuação: Rio das Ostras, Macaé, Barra de São João e Cabo Frio — RJ</p>
