@@ -27,7 +27,7 @@ export function BenefitsStrip() {
       <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-blush/40">
         {ITEMS.map(({ icon: Icon, title, description, href }) => {
           const inner = (
-            <div className="flex items-center gap-5 py-6 md:py-0 md:px-16 md:first:pl-0 md:last:pr-0">
+            <div className="flex items-center justify-center gap-5 py-6 md:py-0 md:px-10">
               <Icon size={32} strokeWidth={1.2} className="shrink-0 text-texto/50" />
               <div>
                 <p className="font-subtitle text-xs uppercase tracking-[0.18em] text-texto font-semibold">
