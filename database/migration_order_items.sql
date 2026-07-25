@@ -19,13 +19,8 @@ create index if not exists idx_order_items_product_id on public.order_items (pro
 -- 2. RLS
 alter table public.order_items enable row level security;
 
--- Qualquer pessoa pode inserir (mesma política de orders)
-create policy "order_items_public_insert"
-  on public.order_items for insert
-  to anon, authenticated
-  with check (true);
-
 -- Apenas admins podem ler/atualizar/deletar
+-- (insert é feito via service_role no backend — não precisa de policy pública)
 create policy "order_items_admin_select"
   on public.order_items for select
   to authenticated

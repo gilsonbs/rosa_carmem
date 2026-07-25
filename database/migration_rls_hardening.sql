@@ -22,6 +22,8 @@ drop policy if exists "customers_public_insert" on public.customers;
 drop policy if exists "orders_public_insert" on public.orders;
 
 -- 3. Remove insert público de order_items
+--    (ignorar se a tabela order_items ainda não existe no banco —
+--     a migration_order_items.sql já foi corrigida para não criar esta policy)
 drop policy if exists "order_items_public_insert" on public.order_items;
 
 -- 4. Corrige settings: a policy anterior usava auth.role() = 'authenticated'
