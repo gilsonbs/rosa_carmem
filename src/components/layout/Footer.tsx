@@ -56,12 +56,22 @@ export function Footer() {
           </h3>
           <ul className="flex flex-col gap-2.5 font-body text-sm text-white/70">
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://www.instagram.com/rosacarmen.loja"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 Instagram
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://wa.me/5522997394050"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
                 WhatsApp
               </a>
             </li>
