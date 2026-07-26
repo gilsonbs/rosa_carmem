@@ -3,7 +3,7 @@ export function Footer() {
     <footer id="sobre" className="bg-texto text-white">
       <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10">
         <div className="flex flex-col gap-3 items-center md:items-start text-center md:text-left">
-          <img src="/logo.png" alt="Rosa Carmen" className="h-9 w-auto brightness-0 invert opacity-90" />
+          <img src="/logo-white.png" alt="Rosa Carmen" className="h-16 w-auto opacity-90" />
           <p className="font-body text-sm text-white/60 max-w-xs">
             Presentes selecionados com cuidado, para quem você ama.
           </p>
