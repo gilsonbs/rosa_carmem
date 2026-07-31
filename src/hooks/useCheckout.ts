@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
-import { createPaymentPreference, redirectToCheckout } from '@/lib/mercadopago'
+import { createPaymentPreference } from '@/lib/mercadopago'
 import { onlyDigits } from '@/utils/mask'
 import type { CartItem } from '@/hooks/useCart'
 
@@ -46,6 +46,8 @@ export function useCheckout(cartItems: CartItem[]) {
   const [address, setAddress] = useState<AddressFormData>(initialAddress)
   const [delivery, setDelivery] = useState<DeliveryFormData>(initialDelivery)
   const [submitting, setSubmitting] = useState(false)
+  const [orderId, setOrderId] = useState<string | null>(null)
+  const [preferenceId, setPreferenceId] = useState<string | null>(null)
 
   function updateCustomer(patch: Partial<CustomerFormData>) {
     setCustomer((prev) => ({ ...prev, ...patch }))
@@ -130,7 +132,7 @@ export function useCheckout(cartItems: CartItem[]) {
 
     setSubmitting(true)
     try {
-      const { init_point } = await createPaymentPreference({
+      const { order_id, preference_id } = await createPaymentPreference({
         items: cartItems.map((i) => ({ product_id: i.product.id, quantity: i.quantity })),
         customer: {
           name: customer.name.trim(),
@@ -150,10 +152,12 @@ export function useCheckout(cartItems: CartItem[]) {
         delivery_time: delivery.time,
       })
 
-      redirectToCheckout(init_point)
+      setOrderId(order_id)
+      setPreferenceId(preference_id)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao processar pagamento'
       toast.error(message)
+    } finally {
       setSubmitting(false)
     }
   }
@@ -164,6 +168,8 @@ export function useCheckout(cartItems: CartItem[]) {
     address,
     delivery,
     submitting,
+    orderId,
+    preferenceId,
     updateCustomer,
     updateAddress,
     updateDelivery,

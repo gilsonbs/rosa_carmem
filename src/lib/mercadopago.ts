@@ -34,6 +34,7 @@ export interface CreatePreferenceInput {
 }
 
 export interface CreatePreferenceResponse {
+  order_id: string
   preference_id: string
   init_point: string
 }

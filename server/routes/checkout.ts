@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { supabaseAdmin } from '../lib/supabase'
-import { preferenceClient } from '../lib/mercadopago'
+import { preferenceClient, paymentClient } from '../lib/mercadopago'
 
 export const checkoutRouter = Router()
 
@@ -189,6 +189,10 @@ checkoutRouter.post('/create-preference', async (req, res) => {
             currency_id: 'BRL',
           }
         }),
+        payment_methods: {
+          excluded_payment_types: [{ id: 'account_money' }],
+          installments: 12,
+        },
         payer: {
           name: customer.name,
           email: customer.email,
@@ -218,12 +222,52 @@ checkoutRouter.post('/create-preference', async (req, res) => {
       .eq('id', orderRow.id)
 
     res.json({
+      order_id: orderRow.id,
       preference_id: preference.id,
       init_point: preference.init_point,
     })
   } catch (mpError) {
     console.error('Erro ao criar preferência no Mercado Pago:', mpError)
     res.status(500).json({ error: 'Erro ao criar preferência de pagamento' })
+  }
+})
+
+checkoutRouter.post('/process-payment', async (req, res) => {
+  const { order_id, form_data } = req.body as {
+    order_id: string
+    form_data: Record<string, unknown>
+  }
+
+  if (!order_id || !form_data) {
+    res.status(400).json({ error: 'Dados incompletos' })
+    return
+  }
+
+  try {
+    const payment = await paymentClient.create({
+      body: {
+        ...form_data,
+        notification_url: `${apiUrl}/api/webhook/mercadopago`,
+        external_reference: order_id,
+      } as Parameters<typeof paymentClient.create>[0]['body'],
+      requestOptions: { idempotencyKey: order_id },
+    })
+
+    await supabaseAdmin
+      .from('orders')
+      .update({
+        mercadopago_payment_id: payment.id ? String(payment.id) : null,
+        payment_status: payment.status ?? 'pending',
+      })
+      .eq('id', order_id)
+
+    res.json({
+      status: payment.status,
+      payment_id: payment.id,
+    })
+  } catch (error) {
+    console.error('Erro ao processar pagamento:', error)
+    res.status(500).json({ error: 'Erro ao processar pagamento' })
   }
 })
 

@@ -7,6 +7,7 @@ import { CustomerForm } from '@/components/checkout/CustomerForm'
 import { DeliveryAddressForm } from '@/components/checkout/DeliveryAddressForm'
 import { ReviewStep } from '@/components/checkout/ReviewStep'
 import { OrderSummary } from '@/components/checkout/OrderSummary'
+import { PaymentBrick } from '@/components/checkout/PaymentBrick'
 import { Button } from '@/components/ui/Button'
 
 export function Checkout() {
@@ -23,6 +24,26 @@ export function Checkout() {
 
   if (items.length === 0) {
     return null
+  }
+
+  if (checkout.preferenceId && checkout.orderId) {
+    return (
+      <div className="min-h-screen bg-fundo px-6 py-12">
+        <div className="max-w-[600px] mx-auto">
+          <h1 className="font-title text-3xl text-texto text-center mb-2">Pagamento</h1>
+          <p className="text-center text-texto/60 font-body mb-8">
+            Escolha a forma de pagamento e finalize seu pedido.
+          </p>
+          <div className="bg-white/60 rounded-2xl p-6 md:p-8">
+            <PaymentBrick
+              preferenceId={checkout.preferenceId}
+              orderId={checkout.orderId}
+              amount={totalPrice}
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
