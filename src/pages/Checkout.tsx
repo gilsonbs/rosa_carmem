@@ -26,7 +26,7 @@ export function Checkout() {
     return null
   }
 
-  if (checkout.preferenceId && checkout.orderId) {
+  if (checkout.orderId) {
     return (
       <div className="min-h-screen bg-fundo px-6 py-12">
         <div className="max-w-[600px] mx-auto">
@@ -36,7 +36,6 @@ export function Checkout() {
           </p>
           <div className="bg-white/60 rounded-2xl p-6 md:p-8">
             <PaymentBrick
-              preferenceId={checkout.preferenceId}
               orderId={checkout.orderId}
               amount={totalPrice}
             />

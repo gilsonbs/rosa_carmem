@@ -15,12 +15,11 @@ function ensureInit() {
 type OnSubmitParam = Parameters<ComponentProps<typeof Payment>['onSubmit']>[0]
 
 interface Props {
-  preferenceId: string
   orderId: string
   amount: number
 }
 
-export function PaymentBrick({ preferenceId, orderId, amount }: Props) {
+export function PaymentBrick({ orderId, amount }: Props) {
   ensureInit()
 
   async function handleSubmit(param: OnSubmitParam) {
@@ -50,14 +49,13 @@ export function PaymentBrick({ preferenceId, orderId, amount }: Props) {
   return (
     <div className="mt-2">
       <Payment
-        initialization={{ amount, preferenceId }}
+        initialization={{ amount }}
         customization={{
           paymentMethods: {
             creditCard: 'all',
             debitCard: 'all',
             ticket: 'all',
             bankTransfer: 'all',
-            mercadoPago: 'none' as unknown as 'all',
           },
         }}
         onSubmit={handleSubmit}
