@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { initMercadoPago, Payment } from '@mercadopago/sdk-react'
 import { MERCADOPAGO_PUBLIC_KEY } from '@/lib/mercadopago'
 
@@ -11,6 +12,8 @@ function ensureInit() {
   }
 }
 
+type OnSubmitParam = Parameters<ComponentProps<typeof Payment>['onSubmit']>[0]
+
 interface Props {
   preferenceId: string
   orderId: string
@@ -20,12 +23,9 @@ interface Props {
 export function PaymentBrick({ preferenceId, orderId, amount }: Props) {
   ensureInit()
 
-  async function handleSubmit({
-    formData,
-  }: {
-    selectedPaymentMethod: string
-    formData: Record<string, unknown>
-  }) {
+  async function handleSubmit(param: OnSubmitParam) {
+    const formData = param.formData as unknown as Record<string, unknown>
+
     const response = await fetch('/api/checkout/process-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -43,9 +43,8 @@ export function PaymentBrick({ preferenceId, orderId, amount }: Props) {
       window.location.href = `${frontendUrl}/checkout/success?payment_id=${result.payment_id}`
     } else if (result.status === 'rejected') {
       throw new Error('Pagamento recusado. Verifique os dados do cartão e tente novamente.')
-    } else {
-      // pending (Pix, boleto) — brick exibe QR/boleto automaticamente
     }
+    // pending (Pix, boleto) — brick exibe QR/boleto automaticamente
   }
 
   return (
@@ -58,7 +57,7 @@ export function PaymentBrick({ preferenceId, orderId, amount }: Props) {
             debitCard: 'all',
             ticket: 'all',
             bankTransfer: 'all',
-            mercadoPago: 'none',
+            mercadoPago: 'none' as unknown as 'all',
           },
         }}
         onSubmit={handleSubmit}
