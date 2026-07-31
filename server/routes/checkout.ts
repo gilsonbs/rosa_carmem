@@ -189,10 +189,6 @@ checkoutRouter.post('/create-preference', async (req, res) => {
             currency_id: 'BRL',
           }
         }),
-        payment_methods: {
-          excluded_payment_types: [{ id: 'account_money' }],
-          installments: 12,
-        },
         payer: {
           name: customer.name,
           email: customer.email,
