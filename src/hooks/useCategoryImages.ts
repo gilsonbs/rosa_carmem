@@ -25,10 +25,12 @@ export function useCategoryImages() {
   async function saveImages(next: CategoryImages) {
     setSaving(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('settings')
-        .upsert({ key: 'category_images', value: next })
+        .upsert({ key: 'category_images', value: next }, { onConflict: 'key' })
+        .select()
       if (error) throw error
+      if (!data || data.length === 0) throw new Error('Sem permissão para salvar configurações')
       setImages(next)
     } finally {
       setSaving(false)

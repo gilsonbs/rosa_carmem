@@ -57,10 +57,12 @@ export function useHeroSettings() {
   async function saveSettings(next: HeroSettings) {
     setSaving(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('settings')
-        .upsert({ key: 'hero', value: next })
+        .upsert({ key: 'hero', value: next }, { onConflict: 'key' })
+        .select()
       if (error) throw error
+      if (!data || data.length === 0) throw new Error('Sem permissão para salvar configurações')
       setSettings(next)
     } finally {
       setSaving(false)

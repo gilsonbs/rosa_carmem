@@ -33,10 +33,12 @@ export function useAnnouncementBanner() {
   async function saveSettings(next: BannerSettings) {
     setSaving(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('settings')
-        .upsert({ key: 'announcement_banner', value: next })
+        .upsert({ key: 'announcement_banner', value: next }, { onConflict: 'key' })
+        .select()
       if (error) throw error
+      if (!data || data.length === 0) throw new Error('Sem permissão para salvar configurações')
       setSettings(next)
     } finally {
       setSaving(false)

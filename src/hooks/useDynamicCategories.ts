@@ -43,10 +43,12 @@ export function useDynamicCategories() {
   async function saveCategories(cats: DynamicCategory[]) {
     setSaving(true)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('settings')
-        .upsert({ key: 'categories', value: cats })
+        .upsert({ key: 'categories', value: cats }, { onConflict: 'key' })
+        .select()
       if (error) throw error
+      if (!data || data.length === 0) throw new Error('Sem permissão para salvar configurações')
       setCategories(cats)
     } finally {
       setSaving(false)
