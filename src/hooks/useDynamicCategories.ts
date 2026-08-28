@@ -42,9 +42,15 @@ export function useDynamicCategories() {
 
   async function saveCategories(cats: DynamicCategory[]) {
     setSaving(true)
-    await supabase.from('settings').upsert({ key: 'categories', value: cats })
-    setCategories(cats)
-    setSaving(false)
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'categories', value: cats })
+      if (error) throw error
+      setCategories(cats)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function uploadCategoryImage(file: File): Promise<string> {

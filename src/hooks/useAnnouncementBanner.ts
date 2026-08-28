@@ -32,11 +32,15 @@ export function useAnnouncementBanner() {
 
   async function saveSettings(next: BannerSettings) {
     setSaving(true)
-    await supabase
-      .from('settings')
-      .upsert({ key: 'announcement_banner', value: next })
-    setSettings(next)
-    setSaving(false)
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'announcement_banner', value: next })
+      if (error) throw error
+      setSettings(next)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return { settings, loading, saving, saveSettings }

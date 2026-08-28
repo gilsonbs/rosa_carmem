@@ -56,11 +56,15 @@ export function useHeroSettings() {
 
   async function saveSettings(next: HeroSettings) {
     setSaving(true)
-    await supabase
-      .from('settings')
-      .upsert({ key: 'hero', value: next })
-    setSettings(next)
-    setSaving(false)
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'hero', value: next })
+      if (error) throw error
+      setSettings(next)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return { settings, heroProducts, loading, saving, saveSettings }

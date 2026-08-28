@@ -24,11 +24,15 @@ export function useCategoryImages() {
 
   async function saveImages(next: CategoryImages) {
     setSaving(true)
-    await supabase
-      .from('settings')
-      .upsert({ key: 'category_images', value: next })
-    setImages(next)
-    setSaving(false)
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'category_images', value: next })
+      if (error) throw error
+      setImages(next)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function uploadCategoryImage(file: File): Promise<string> {
