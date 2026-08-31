@@ -11,18 +11,23 @@ export function useStoreStatus() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    supabase
-      .from('settings')
-      .select('value')
-      .eq('key', 'store_status')
-      .maybeSingle()
-      .then(({ data }) => {
+    async function load() {
+      try {
+        const { data } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'store_status')
+          .maybeSingle()
         if (data?.value && typeof data.value === 'object') {
           setIsOpen((data.value as StoreStatusValue).open ?? true)
         }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   async function setStoreOpen(open: boolean) {

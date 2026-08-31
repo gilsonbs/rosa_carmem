@@ -12,7 +12,7 @@ import {
   LayoutGrid,
   Megaphone,
   ShoppingCart,
-  ShoppingCartOff,
+  Lock,
 } from 'lucide-react'
 import { useStoreStatus } from '@/hooks/useStoreStatus'
 
@@ -85,7 +85,7 @@ export function Sidebar({ unreadOrders = 0, onVisitKanban }: SidebarProps) {
               : 'bg-red-50 text-red-600 hover:bg-red-100'
           }`}
         >
-          {isOpen ? <ShoppingCart size={18} /> : <ShoppingCartOff size={18} />}
+          {isOpen ? <ShoppingCart size={18} /> : <Lock size={18} />}
           <span className="flex-1 text-left">
             {saving ? 'Salvando...' : isOpen ? 'Loja aberta' : 'Loja fechada'}
           </span>

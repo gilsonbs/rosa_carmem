@@ -106,10 +106,6 @@ export function DeliveryAddressForm({
     }
   }
 
-  function handleDateChange(e: ChangeEvent<HTMLInputElement>) {
-    onDeliveryChange({ date: e.target.value })
-  }
-
   return (
     <div className="flex flex-col gap-5">
       <div>
