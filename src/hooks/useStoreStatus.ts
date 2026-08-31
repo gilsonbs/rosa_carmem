@@ -20,8 +20,9 @@ export function useStoreStatus() {
         if (data?.value && typeof data.value === 'object') {
           setIsOpen((data.value as StoreStatusValue).open ?? true)
         }
-        setLoading(false)
       })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   async function setStoreOpen(open: boolean) {

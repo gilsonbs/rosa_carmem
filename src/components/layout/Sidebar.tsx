@@ -75,27 +75,25 @@ export function Sidebar({ unreadOrders = 0, onVisitKanban }: SidebarProps) {
         ))}
       </nav>
 
-      {!statusLoading && (
-        <div className="mt-4 pt-4 border-t border-blush/40">
-          <button
-            onClick={() => setStoreOpen(!isOpen)}
-            disabled={saving}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-subtitle text-sm transition-colors ${
-              isOpen
-                ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                : 'bg-red-50 text-red-600 hover:bg-red-100'
-            }`}
-          >
-            {isOpen ? <ShoppingCart size={18} /> : <ShoppingCartOff size={18} />}
-            <span className="flex-1 text-left">
-              {saving ? 'Salvando...' : isOpen ? 'Loja aberta' : 'Loja fechada'}
-            </span>
-            <span className={`w-8 h-4 rounded-full relative transition-colors ${isOpen ? 'bg-green-500' : 'bg-red-400'}`}>
-              <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all ${isOpen ? 'left-4' : 'left-0.5'}`} />
-            </span>
-          </button>
-        </div>
-      )}
+      <div className="mt-4 pt-4 border-t border-blush/40">
+        <button
+          onClick={() => setStoreOpen(!isOpen)}
+          disabled={saving || statusLoading}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-subtitle text-sm transition-colors ${
+            isOpen
+              ? 'bg-green-50 text-green-700 hover:bg-green-100'
+              : 'bg-red-50 text-red-600 hover:bg-red-100'
+          }`}
+        >
+          {isOpen ? <ShoppingCart size={18} /> : <ShoppingCartOff size={18} />}
+          <span className="flex-1 text-left">
+            {saving ? 'Salvando...' : isOpen ? 'Loja aberta' : 'Loja fechada'}
+          </span>
+          <span className={`w-8 h-4 rounded-full relative transition-colors ${isOpen ? 'bg-green-500' : 'bg-red-400'}`}>
+            <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all ${isOpen ? 'left-4' : 'left-0.5'}`} />
+          </span>
+        </button>
+      </div>
     </aside>
   )
 }
