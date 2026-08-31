@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { X, Trash2, Minus, Plus } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { useStoreStatus } from '@/hooks/useStoreStatus'
 import { formatCurrency } from '@/utils/format'
 
 interface CartDrawerProps {
@@ -10,6 +11,7 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, totalItems, totalPrice, removeItem, updateQuantity } = useCart()
+  const { isOpen: storeOpen, loading: storeLoading } = useStoreStatus()
   const navigate = useNavigate()
 
   function handleCheckout() {
@@ -124,12 +126,20 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 <span>Total</span>
                 <span className="text-rosa">{formatCurrency(totalPrice)}</span>
               </div>
-              <button
-                onClick={handleCheckout}
-                className="w-full bg-rosa text-white font-subtitle font-semibold py-3 rounded-full hover:bg-rosa/90 transition-colors"
-              >
-                Finalizar compra →
-              </button>
+              {!storeLoading && !storeOpen ? (
+                <div className="text-center py-2">
+                  <p className="text-sm font-subtitle text-red-500 font-semibold">Loja temporariamente fechada</p>
+                  <p className="text-xs font-body text-texto/50 mt-0.5">Não estamos aceitando pedidos no momento.</p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleCheckout}
+                  disabled={storeLoading}
+                  className="w-full bg-rosa text-white font-subtitle font-semibold py-3 rounded-full hover:bg-rosa/90 transition-colors disabled:opacity-50"
+                >
+                  Finalizar compra →
+                </button>
+              )}
             </div>
           </>
         )}
