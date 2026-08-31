@@ -1,7 +1,7 @@
 import { useMemo, useState, type ComponentType } from 'react'
 import toast from 'react-hot-toast'
 import { DndContext, useDroppable, useDraggable, type DragEndEvent } from '@dnd-kit/core'
-import { Inbox, CheckCircle2, Hammer, Truck, Gift, Calendar, Clock, MapPin } from 'lucide-react'
+import { Inbox, CheckCircle2, Hammer, Truck, Gift, Calendar, Clock, MapPin, ArchiveX } from 'lucide-react'
 import { useKanban, isKanbanMoveAllowed } from '@/hooks/useKanban'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatIsoDate, getTodayIso, shiftIsoDate } from '@/utils/format'
@@ -34,7 +34,15 @@ function deliveryBadge(dateIso: string | null): { label: string; tone: 'danger' 
   return null
 }
 
-function Card({ order, color }: { order: OrderWithRelations; color: string }) {
+function Card({
+  order,
+  color,
+  onArchive,
+}: {
+  order: OrderWithRelations
+  color: string
+  onArchive?: () => void
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: order.id,
   })
@@ -59,11 +67,24 @@ function Card({ order, color }: { order: OrderWithRelations; color: string }) {
         <span className="text-texto/40 text-[11px] font-mono">
           #{order.id.slice(0, 8).toUpperCase()}
         </span>
-        {badge && (
-          <Badge tone={badge.tone} className="text-[10px] px-1.5 py-0.5">
-            {badge.label}
-          </Badge>
-        )}
+        <div className="flex items-center gap-1">
+          {badge && (
+            <Badge tone={badge.tone} className="text-[10px] px-1.5 py-0.5">
+              {badge.label}
+            </Badge>
+          )}
+          {onArchive && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onArchive() }}
+              onPointerDown={(e) => e.stopPropagation()}
+              title="Arquivar pedido"
+              className="text-texto/30 hover:text-red-400 transition-colors"
+            >
+              <ArchiveX size={13} />
+            </button>
+          )}
+        </div>
       </div>
       <Badge tone={getOrderSourceTone(order)} className="text-[10px] px-1.5 py-0.5 w-fit">
         {getOrderSourceLabel(order)}
@@ -99,9 +120,11 @@ function Card({ order, color }: { order: OrderWithRelations; color: string }) {
 function Column({
   def,
   orders,
+  onArchive,
 }: {
   def: KanbanColumnDef
   orders: OrderWithRelations[]
+  onArchive?: (orderId: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: def.status })
   const Icon = def.icon
@@ -125,7 +148,12 @@ function Column({
         }`}
       >
         {orders.map((order) => (
-          <Card key={order.id} order={order} color={def.color} />
+          <Card
+            key={order.id}
+            order={order}
+            color={def.color}
+            onArchive={onArchive ? () => onArchive(order.id) : undefined}
+          />
         ))}
       </div>
     </div>
@@ -133,7 +161,7 @@ function Column({
 }
 
 export function Kanban() {
-  const { orders, loading, error, moveCard } = useKanban()
+  const { orders, loading, error, moveCard, archiveOrder } = useKanban()
   const [filterDate, setFilterDate] = useState('')
   const [filterCity, setFilterCity] = useState('')
 
@@ -222,7 +250,23 @@ export function Kanban() {
         <DndContext onDragEnd={handleDragEnd}>
           <div className="flex gap-4 overflow-x-auto pb-4">
             {KANBAN_COLUMNS.map((def) => (
-              <Column key={def.status} def={def} orders={ordersByStatus.get(def.status) ?? []} />
+              <Column
+                key={def.status}
+                def={def}
+                orders={ordersByStatus.get(def.status) ?? []}
+                onArchive={
+                  def.status === 'delivered'
+                    ? async (orderId) => {
+                        try {
+                          await archiveOrder(orderId)
+                          toast.success('Pedido arquivado')
+                        } catch {
+                          toast.error('Erro ao arquivar pedido')
+                        }
+                      }
+                    : undefined
+                }
+              />
             ))}
           </div>
         </DndContext>

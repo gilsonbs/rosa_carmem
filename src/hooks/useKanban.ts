@@ -37,6 +37,7 @@ export function useKanban() {
       .from('orders')
       .select('*, customer:customers(*), product:products(*)')
       .in('order_status', KANBAN_STATUSES)
+      .eq('archived', false)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -132,5 +133,16 @@ export function useKanban() {
     return 'moved'
   }
 
-  return { orders, loading, error, moveCard }
+  async function archiveOrder(orderId: string): Promise<void> {
+    setOrders((prev) => prev.filter((o) => o.id !== orderId))
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ archived: true })
+      .eq('id', orderId)
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+  }
+
+  return { orders, loading, error, moveCard, archiveOrder }
 }
