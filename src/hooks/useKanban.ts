@@ -26,7 +26,7 @@ export function isKanbanMoveAllowed(from: OrderStatus, to: OrderStatus): boolean
   return STATUS_RANK[to] > STATUS_RANK[from]
 }
 
-export function useKanban() {
+export function useKanban(onNewOrder?: () => void) {
   const [orders, setOrders] = useState<OrderWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -90,6 +90,7 @@ export function useKanban() {
             setOrders((prev) =>
               prev.some((order) => order.id === data.id) ? prev : [data as OrderWithRelations, ...prev],
             )
+            onNewOrder?.()
           }
         },
       )

@@ -160,8 +160,31 @@ function Column({
   )
 }
 
+function playBell() {
+  try {
+    const ctx = new AudioContext()
+    const strike = (freq: number, startTime: number) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, startTime)
+      gain.gain.setValueAtTime(0.25, startTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2)
+      osc.start(startTime)
+      osc.stop(startTime + 1.2)
+    }
+    strike(880, ctx.currentTime)
+    strike(1108, ctx.currentTime + 0.18)
+    setTimeout(() => ctx.close(), 1600)
+  } catch {
+    // navegador sem suporte a Web Audio
+  }
+}
+
 export function Kanban() {
-  const { orders, loading, error, moveCard, archiveOrder } = useKanban()
+  const { orders, loading, error, moveCard, archiveOrder } = useKanban(playBell)
   const [filterDate, setFilterDate] = useState('')
   const [filterCity, setFilterCity] = useState('')
 
