@@ -185,7 +185,7 @@ function playBell() {
 
 export function Kanban() {
   const { orders, loading, error, moveCard, archiveOrder } = useKanban(playBell)
-  const [filterDate, setFilterDate] = useState('')
+  const [filterDate, setFilterDate] = useState(getTodayIso)
   const [filterCity, setFilterCity] = useState('')
 
   const filteredOrders = useMemo(() => {

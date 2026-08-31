@@ -24,7 +24,42 @@ const inputClasses =
   'w-full rounded-lg border border-blush/60 px-3.5 py-2.5 font-body text-sm text-texto focus:outline-none focus:ring-2 focus:ring-rosa/40 focus:border-rosa'
 const labelClasses = 'block font-subtitle text-sm text-texto/80 mb-1.5'
 
-const todayIso = getTodayIso()
+const DELIVERY_CUTOFF_HOUR = 18 // entregas até 18h
+const ADVANCE_HOURS = 3        // mínimo de antecedência
+
+/** Data mínima e horários disponíveis considerando a regra de 3h + corte às 18h. */
+function getDeliveryConstraints() {
+  const now = new Date()
+  const todayIso = getTodayIso()
+
+  // Horário mais cedo que consegue entregar hoje
+  const earliest = new Date(now.getTime() + ADVANCE_HOURS * 60 * 60 * 1000)
+  const earliestH = earliest.getHours()
+  const earliestM = earliest.getMinutes()
+
+  // Se o horário mais cedo já passa das 18h, só pode amanhã
+  const sameDayPossible =
+    earliestH < DELIVERY_CUTOFF_HOUR ||
+    (earliestH === DELIVERY_CUTOFF_HOUR && earliestM === 0)
+
+  let minDate = todayIso
+  if (!sameDayPossible) {
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    minDate = tomorrow.toISOString().split('T')[0]
+  }
+
+  return { todayIso, minDate, earliestH, earliestM, sameDayPossible }
+}
+
+function getAvailableTimeOptions(selectedDate: string): string[] {
+  const { todayIso, earliestH, earliestM } = getDeliveryConstraints()
+  if (selectedDate !== todayIso) return DELIVERY_TIME_OPTIONS
+  return DELIVERY_TIME_OPTIONS.filter((t) => {
+    const [h, m] = t.split(':').map(Number)
+    return h > earliestH || (h === earliestH && m >= earliestM)
+  })
+}
 
 export function DeliveryAddressForm({
   address,
@@ -33,6 +68,8 @@ export function DeliveryAddressForm({
   onDeliveryChange,
 }: DeliveryAddressFormProps) {
   const [lookingUpCep, setLookingUpCep] = useState(false)
+  const { minDate, sameDayPossible } = getDeliveryConstraints()
+  const availableTimes = getAvailableTimeOptions(delivery.date)
 
   function handleAddressChange(e: ChangeEvent<HTMLInputElement>) {
     onAddressChange({ [e.target.name]: e.target.value })
@@ -194,11 +231,18 @@ export function DeliveryAddressForm({
             id="delivery_date"
             name="delivery_date"
             type="date"
-            min={todayIso}
+            min={minDate}
             value={delivery.date}
-            onChange={handleDateChange}
+            onChange={(e) => {
+              onDeliveryChange({ date: e.target.value, time: '' })
+            }}
             className={inputClasses}
           />
+          {!sameDayPossible && (
+            <p className="text-[11px] text-texto/50 mt-1">
+              Pedidos após as 15h são entregues no próximo dia útil.
+            </p>
+          )}
         </div>
         <div className="col-span-2 md:col-span-1">
           <label className={labelClasses} htmlFor="delivery_time">
@@ -214,12 +258,17 @@ export function DeliveryAddressForm({
             <option value="" disabled>
               Selecione
             </option>
-            {DELIVERY_TIME_OPTIONS.map((time) => (
+            {availableTimes.map((time) => (
               <option key={time} value={time}>
                 {time}
               </option>
             ))}
           </select>
+          {delivery.date === getDeliveryConstraints().todayIso && availableTimes.length === 0 && (
+            <p className="text-[11px] text-red-500 mt-1">
+              Nenhum horário disponível para hoje. Selecione outro dia.
+            </p>
+          )}
         </div>
       </div>
     </div>
