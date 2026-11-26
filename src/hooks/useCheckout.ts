@@ -97,7 +97,7 @@ export function useCheckout(cartItems: CartItem[]) {
       return false
     }
     if (!delivery.zone_id) {
-      toast.error('Selecione a zona de entrega')
+      toast.error('Selecione a zona de entrega (confira se entregamos no seu endereço)')
       return false
     }
     if (delivery.personal_message.length > PERSONAL_MESSAGE_MAX) {

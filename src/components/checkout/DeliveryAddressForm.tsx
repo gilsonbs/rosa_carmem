@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import { maskCep, onlyDigits } from '@/utils/mask'
 import { getTodayIso } from '@/utils/format'
@@ -6,6 +6,7 @@ import { formatCurrency } from '@/utils/format'
 import { DELIVERY_TIME_OPTIONS, PERSONAL_MESSAGE_MAX } from '@/hooks/useCheckout'
 import type { AddressFormData, DeliveryFormData } from '@/hooks/useCheckout'
 import { groupZonesByMunicipality } from '@/hooks/useDeliveryZones'
+import { matchDeliveryZones } from '@/utils/deliveryZones'
 import type { DeliveryZone } from '@/types'
 
 interface ViaCepResponse {
@@ -79,6 +80,31 @@ export function DeliveryAddressForm({
 }: DeliveryAddressFormProps) {
   const selectedZone = zones.find((z) => z.id === delivery.zone_id) ?? null
   const messageLength = delivery.personal_message.length
+
+  // Zonas válidas para a cidade/bairro do endereço (preenchidos pelo ViaCEP).
+  const match = useMemo(
+    () => matchDeliveryZones(zones, address.city, address.neighborhood),
+    [zones, address.city, address.neighborhood],
+  )
+  const outOfArea = match.status === 'out_of_area' && zoneRequired
+  // No pedido manual do admin, endereço fora da área ainda pode escolher qualquer zona.
+  const selectableZones = match.status === 'out_of_area' && !zoneRequired ? zones : match.zones
+  const selectableKey = selectableZones.map((z) => z.id).join(',')
+
+  // Ao mudar o endereço: seleciona a zona automaticamente quando dá, e limpa
+  // a escolha anterior se ela não vale mais para o novo endereço. Só roda
+  // quando o endereço muda — o cliente continua livre para trocar a zona.
+  useEffect(() => {
+    if (zonesLoading) return
+    if (match.autoZoneId) {
+      if (delivery.zone_id !== match.autoZoneId) onDeliveryChange({ zone_id: match.autoZoneId })
+      return
+    }
+    if (delivery.zone_id && !selectableZones.some((z) => z.id === delivery.zone_id)) {
+      onDeliveryChange({ zone_id: '' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectableKey, match.autoZoneId, zonesLoading])
   const [lookingUpCep, setLookingUpCep] = useState(false)
   const { minDate, sameDayPossible } = getDeliveryConstraints()
   const availableTimes = getAvailableTimeOptions(delivery.date)
@@ -148,13 +174,13 @@ export function DeliveryAddressForm({
           required={zoneRequired}
           value={delivery.zone_id}
           onChange={(e) => onDeliveryChange({ zone_id: e.target.value })}
-          disabled={zonesLoading}
-          className={inputClasses}
+          disabled={zonesLoading || outOfArea}
+          className={`${inputClasses} disabled:bg-gray-50 disabled:text-texto/40`}
         >
           <option value="" disabled={zoneRequired}>
             {zonesLoading ? 'Carregando zonas...' : zoneRequired ? 'Selecione sua região' : 'Sem taxa de entrega'}
           </option>
-          {groupZonesByMunicipality(zones).map(([municipality, list]) => (
+          {groupZonesByMunicipality(selectableZones).map(([municipality, list]) => (
             <optgroup key={municipality} label={municipality}>
               {list.map((zone) => (
                 <option key={zone.id} value={zone.id}>
@@ -164,6 +190,17 @@ export function DeliveryAddressForm({
             </optgroup>
           ))}
         </select>
+        {outOfArea && (
+          <p className="mt-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-600 font-body">
+            Não entregamos nesse endereço ({address.city}). Atendemos{' '}
+            {[...new Set(zones.map((z) => z.municipality))].join(', ')}.
+          </p>
+        )}
+        {match.status === 'no_address' && !zonesLoading && zones.length > 0 && (
+          <p className="text-[11px] text-texto/50 mt-1">
+            Preencha o CEP para mostrarmos as zonas do seu endereço.
+          </p>
+        )}
         {selectedZone && (
           <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-blush/50 text-rosa font-subtitle text-xs font-medium">
             Taxa de entrega: {formatCurrency(selectedZone.fee)}
