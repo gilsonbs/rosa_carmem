@@ -9,6 +9,7 @@ import { formatCurrency } from '@/utils/format'
 import type { CustomerFormData, AddressFormData, DeliveryFormData } from '@/hooks/useCheckout'
 import type { ManualOrderInput } from '@/hooks/useOrders'
 import type { ProductWithStock } from '@/hooks/useAdminProducts'
+import { useDeliveryZones } from '@/hooks/useDeliveryZones'
 
 interface ManualOrderFormProps {
   products: ProductWithStock[]
@@ -33,7 +34,7 @@ const initialAddress: AddressFormData = {
   state: '',
   zip_code: '',
 }
-const initialDelivery: DeliveryFormData = { date: '', time: '' }
+const initialDelivery: DeliveryFormData = { date: '', time: '', zone_id: '', personal_message: '' }
 
 const inputClasses =
   'w-full rounded-lg border border-blush/60 px-3.5 py-2.5 font-body text-sm text-texto focus:outline-none focus:ring-2 focus:ring-rosa/40 focus:border-rosa'
@@ -45,6 +46,8 @@ export function ManualOrderForm({ products, onSubmit, onCancel }: ManualOrderFor
   const [delivery, setDelivery] = useState<DeliveryFormData>(initialDelivery)
   const [lines, setLines] = useState<LineItem[]>([{ product_id: '', quantity: 1 }])
   const [submitting, setSubmitting] = useState(false)
+  const { zones, loading: zonesLoading } = useDeliveryZones()
+  const deliveryFee = zones.find((z) => z.id === delivery.zone_id)?.fee ?? 0
 
   const availableProducts = products.filter((p) => p.active && p.stock > 0)
 
@@ -64,10 +67,11 @@ export function ManualOrderForm({ products, onSubmit, onCancel }: ManualOrderFor
     return products.find((p) => p.id === id)
   }
 
-  const totalAmount = lines.reduce((sum, l) => {
-    const p = getProduct(l.product_id)
-    return sum + (p ? p.price * l.quantity : 0)
-  }, 0)
+  const totalAmount =
+    lines.reduce((sum, l) => {
+      const p = getProduct(l.product_id)
+      return sum + (p ? p.price * l.quantity : 0)
+    }, 0) + deliveryFee
 
   function validate(): boolean {
     if (!customer.name.trim()) { toast.error('Informe o nome do cliente'); return false }
@@ -118,6 +122,9 @@ export function ManualOrderForm({ products, onSubmit, onCancel }: ManualOrderFor
         },
         delivery_date: delivery.date,
         delivery_time: delivery.time,
+        delivery_zone_id: delivery.zone_id || null,
+        delivery_fee: deliveryFee,
+        personal_message: delivery.personal_message.trim() || null,
       })
     } finally {
       setSubmitting(false)
@@ -204,6 +211,9 @@ export function ManualOrderForm({ products, onSubmit, onCancel }: ManualOrderFor
           onAddressChange={(patch) => setAddress((prev) => ({ ...prev, ...patch }))}
           delivery={delivery}
           onDeliveryChange={(patch) => setDelivery((prev) => ({ ...prev, ...patch }))}
+          zones={zones}
+          zonesLoading={zonesLoading}
+          zoneRequired={false}
         />
       </div>
 

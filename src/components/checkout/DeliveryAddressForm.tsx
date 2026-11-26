@@ -2,8 +2,11 @@ import { useState, type ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import { maskCep, onlyDigits } from '@/utils/mask'
 import { getTodayIso } from '@/utils/format'
-import { DELIVERY_TIME_OPTIONS } from '@/hooks/useCheckout'
+import { formatCurrency } from '@/utils/format'
+import { DELIVERY_TIME_OPTIONS, PERSONAL_MESSAGE_MAX } from '@/hooks/useCheckout'
 import type { AddressFormData, DeliveryFormData } from '@/hooks/useCheckout'
+import { groupZonesByMunicipality } from '@/hooks/useDeliveryZones'
+import type { DeliveryZone } from '@/types'
 
 interface ViaCepResponse {
   logradouro?: string
@@ -18,6 +21,10 @@ interface DeliveryAddressFormProps {
   onAddressChange: (patch: Partial<AddressFormData>) => void
   delivery: DeliveryFormData
   onDeliveryChange: (patch: Partial<DeliveryFormData>) => void
+  zones: DeliveryZone[]
+  zonesLoading?: boolean
+  /** Pedido manual no admin permite pedido sem zona (ex.: retirada). */
+  zoneRequired?: boolean
 }
 
 const inputClasses =
@@ -66,7 +73,12 @@ export function DeliveryAddressForm({
   onAddressChange,
   delivery,
   onDeliveryChange,
+  zones,
+  zonesLoading,
+  zoneRequired = true,
 }: DeliveryAddressFormProps) {
+  const selectedZone = zones.find((z) => z.id === delivery.zone_id) ?? null
+  const messageLength = delivery.personal_message.length
   const [lookingUpCep, setLookingUpCep] = useState(false)
   const { minDate, sameDayPossible } = getDeliveryConstraints()
   const availableTimes = getAvailableTimeOptions(delivery.date)
@@ -123,6 +135,45 @@ export function DeliveryAddressForm({
           onBlur={handleCepBlur}
           className={inputClasses}
         />
+      </div>
+
+      <div>
+        <label className={labelClasses} htmlFor="delivery_zone">
+          📍 Zona de entrega
+          {!zoneRequired && <span className="text-texto/40 font-normal"> (opcional)</span>}
+        </label>
+        <select
+          id="delivery_zone"
+          name="delivery_zone"
+          required={zoneRequired}
+          value={delivery.zone_id}
+          onChange={(e) => onDeliveryChange({ zone_id: e.target.value })}
+          disabled={zonesLoading}
+          className={inputClasses}
+        >
+          <option value="" disabled={zoneRequired}>
+            {zonesLoading ? 'Carregando zonas...' : zoneRequired ? 'Selecione sua região' : 'Sem taxa de entrega'}
+          </option>
+          {groupZonesByMunicipality(zones).map(([municipality, list]) => (
+            <optgroup key={municipality} label={municipality}>
+              {list.map((zone) => (
+                <option key={zone.id} value={zone.id}>
+                  {zone.zone_name} ({formatCurrency(zone.fee)})
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        {selectedZone && (
+          <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-blush/50 text-rosa font-subtitle text-xs font-medium">
+            Taxa de entrega: {formatCurrency(selectedZone.fee)}
+          </span>
+        )}
+        {!zonesLoading && zones.length === 0 && (
+          <p className="text-[11px] text-red-500 mt-1">
+            Nenhuma zona de entrega disponível no momento. Fale conosco.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -216,6 +267,31 @@ export function DeliveryAddressForm({
           onChange={handleAddressChange}
           className={inputClasses}
         />
+      </div>
+
+      <div>
+        <label className={labelClasses} htmlFor="personal_message">
+          💌 Mensagem para o cartão <span className="text-texto/40 font-normal">(opcional)</span>
+        </label>
+        <textarea
+          id="personal_message"
+          name="personal_message"
+          rows={4}
+          maxLength={PERSONAL_MESSAGE_MAX}
+          placeholder="Escreva uma mensagem especial para acompanhar o presente..."
+          value={delivery.personal_message}
+          onChange={(e) =>
+            onDeliveryChange({ personal_message: e.target.value.slice(0, PERSONAL_MESSAGE_MAX) })
+          }
+          className="w-full resize-none rounded-lg border border-blush/60 bg-white px-3.5 py-2.5 font-body text-sm italic text-texto placeholder:not-italic placeholder:text-texto/35 focus:outline-none focus:ring-1 focus:ring-rosa focus:border-rosa transition-colors"
+        />
+        <p
+          className={`text-right text-[11px] mt-1 font-body ${
+            messageLength >= PERSONAL_MESSAGE_MAX ? 'text-rosa font-semibold' : 'text-texto/40'
+          }`}
+        >
+          {messageLength}/{PERSONAL_MESSAGE_MAX}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-blush/40">

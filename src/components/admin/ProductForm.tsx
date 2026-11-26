@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
 import type { ProductInput } from '@/hooks/useAdminProducts'
 import type { Product } from '@/types'
-import { useDynamicCategories } from '@/hooks/useDynamicCategories'
+import { useCategories } from '@/hooks/useCategories'
 
 interface ProductFormProps {
   initialProduct?: Product | null
@@ -21,8 +21,8 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
   const [description, setDescription] = useState(initialProduct?.description ?? '')
   const [price, setPrice] = useState(initialProduct ? String(initialProduct.price) : '')
   const [imageUrl, setImageUrl] = useState(initialProduct?.image_url ?? '')
-  const { categories } = useDynamicCategories()
-  const [category, setCategory] = useState(initialProduct?.category ?? '')
+  const { categories, loading: categoriesLoading } = useCategories()
+  const [categoryIds, setCategoryIds] = useState<string[]>(initialProduct?.category_ids ?? [])
   const [featured, setFeatured] = useState(initialProduct?.featured ?? false)
   const [active, setActive] = useState(initialProduct?.active ?? true)
   const [submitting, setSubmitting] = useState(false)
@@ -43,6 +43,10 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
     }
   }
 
+  function toggleCategory(id: string, checked: boolean) {
+    setCategoryIds((prev) => (checked ? [...prev, id] : prev.filter((c) => c !== id)))
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const numericPrice = Number(price)
@@ -57,7 +61,8 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
         image_url: imageUrl.trim() || null,
         featured,
         active,
-        category: category || null,
+        // Ignora IDs de categorias que foram excluídas nesse meio-tempo.
+        category_ids: categoryIds.filter((id) => categories.some((c) => c.id === id)),
       })
     } finally {
       setSubmitting(false)
@@ -135,24 +140,40 @@ export function ProductForm({ initialProduct, onSubmit, onCancel, uploadImage }:
           placeholder="ou cole a URL da imagem"
         />
       </div>
-      <div>
-        <label className={labelClasses} htmlFor="category">
-          Categoria
-        </label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className={inputClasses}
-        >
-          <option value="">Sem categoria</option>
-          {categories.map((cat) => (
-            <option key={cat.value} value={cat.value}>
-              {cat.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <fieldset>
+        <legend className={labelClasses}>Categorias</legend>
+        {categoriesLoading ? (
+          <p className="text-xs text-texto/50 font-body">Carregando categorias...</p>
+        ) : categories.length === 0 ? (
+          <p className="text-xs text-texto/50 font-body">
+            Nenhuma categoria cadastrada. Crie em Admin → Categorias.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => {
+              const checked = categoryIds.includes(cat.id)
+              return (
+                <label
+                  key={cat.id}
+                  className={`flex items-center gap-2 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-subtitle transition-colors ${
+                    checked
+                      ? 'border-rosa bg-rosa/10 text-rosa'
+                      : 'border-blush/60 text-texto/70 hover:border-rosa/60'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => toggleCategory(cat.id, e.target.checked)}
+                    className="accent-rosa"
+                  />
+                  {cat.name}
+                </label>
+              )
+            })}
+          </div>
+        )}
+      </fieldset>
 
       <div className="flex gap-6">
         <label className="flex items-center gap-2 text-sm font-body text-texto/80">

@@ -1,12 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAnnouncementBanner } from '@/hooks/useAnnouncementBanner'
 
+/**
+ * Faixa fina acima do header. O texto vem da tela "Banner de Anúncio" do
+ * admin; enquanto nada for salvo lá, usa DEFAULT_BANNER_TEXT
+ * (src/hooks/useAnnouncementBanner.ts).
+ */
 export function AnnouncementBanner() {
   const { settings, loading } = useAnnouncementBanner()
   const [index, setIndex] = useState(0)
   const [visible, setVisible] = useState(true)
 
-  const active = settings.messages.filter((m) => m.trim() !== '')
+  const active = useMemo(
+    () =>
+      settings.messages
+        .map((full, i) => ({ full: full.trim(), short: settings.short_messages?.[i]?.trim() ?? '' }))
+        .filter((m) => m.full !== ''),
+    [settings.messages, settings.short_messages],
+  )
 
   useEffect(() => {
     if (active.length <= 1) return
@@ -22,13 +33,16 @@ export function AnnouncementBanner() {
 
   if (loading || !settings.enabled || active.length === 0) return null
 
+  const current = active[index % active.length]
+
   return (
-    <div className="w-full bg-rosa text-white py-2 px-4 text-center overflow-hidden">
+    <div className="w-full h-9 bg-rosa text-white px-4 flex items-center justify-center overflow-hidden">
       <p
-        className="font-subtitle text-xs uppercase tracking-widest transition-opacity duration-300"
+        className="font-body text-xs sm:text-[13px] leading-none whitespace-nowrap truncate transition-opacity duration-300"
         style={{ opacity: visible ? 1 : 0 }}
       >
-        {active[index]}
+        <span className="md:hidden">{current.short || current.full}</span>
+        <span className="hidden md:inline whitespace-pre">{current.full}</span>
       </p>
     </div>
   )

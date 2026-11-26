@@ -25,6 +25,7 @@ import { Delivery } from '@/pages/admin/Delivery'
 import { HeroConfig } from '@/pages/admin/HeroConfig'
 import { CategoryConfig } from '@/pages/admin/CategoryConfig'
 import { AnnouncementBannerConfig } from '@/pages/admin/AnnouncementBannerConfig'
+import { ZonasEntrega } from '@/pages/admin/ZonasEntrega'
 import { Login } from '@/pages/admin/Login'
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
             <Route path="hero" element={<HeroConfig />} />
             <Route path="categorias" element={<CategoryConfig />} />
             <Route path="banner" element={<AnnouncementBannerConfig />} />
+            <Route path="zonas" element={<ZonasEntrega />} />
           </Route>
         </Routes>
       </BrowserRouter>

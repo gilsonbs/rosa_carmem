@@ -1,45 +1,68 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Upload, X, Plus, GripVertical } from 'lucide-react'
+import { Upload, X, Plus, ChevronUp, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useDynamicCategories, slugify, type DynamicCategory } from '@/hooks/useDynamicCategories'
+import { useCategories, slugify, type CategoryDraft } from '@/hooks/useCategories'
 import { CATEGORY_META } from '@/components/store/CategoryStrip'
 
+interface DraftRow extends CategoryDraft {
+  key: string
+}
+
 export function CategoryConfig() {
-  const { categories, loading, saving, saveCategories, uploadCategoryImage } = useDynamicCategories()
-  const [draft, setDraft] = useState<DynamicCategory[]>([])
+  const { categories, loading, saving, saveAll, uploadCategoryImage } = useCategories()
+  const [draft, setDraft] = useState<DraftRow[]>([])
   const [uploading, setUploading] = useState<string | null>(null)
   const [newLabel, setNewLabel] = useState('')
 
   useEffect(() => {
-    if (!loading) setDraft(categories)
+    if (!loading) {
+      setDraft(
+        categories.map((c) => ({ key: c.id, id: c.id, name: c.name, slug: c.slug, image_url: c.image_url })),
+      )
+    }
   }, [loading, categories])
 
-  function updateLabel(value: string, label: string) {
-    setDraft((prev) => prev.map((c) => (c.value === value ? { ...c, label } : c)))
+  function patchRow(key: string, patch: Partial<DraftRow>) {
+    setDraft((prev) => prev.map((c) => (c.key === key ? { ...c, ...patch } : c)))
   }
 
-  function removeCategory(value: string) {
-    setDraft((prev) => prev.filter((c) => c.value !== value))
+  function removeCategory(row: DraftRow) {
+    if (row.id && !window.confirm(`Remover "${row.name}"? Os produtos deixam de estar nessa categoria.`)) return
+    setDraft((prev) => prev.filter((c) => c.key !== row.key))
+  }
+
+  function move(index: number, delta: -1 | 1) {
+    setDraft((prev) => {
+      const target = index + delta
+      if (target < 0 || target >= prev.length) return prev
+      const next = [...prev]
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
   }
 
   function addCategory() {
     const trimmed = newLabel.trim()
     if (!trimmed) return
-    const value = slugify(trimmed)
-    if (draft.some((c) => c.value === value)) {
+    const slug = slugify(trimmed)
+    if (!slug) {
+      toast.error('Nome inválido')
+      return
+    }
+    if (draft.some((c) => c.slug === slug || c.name.toLowerCase() === trimmed.toLowerCase())) {
       toast.error('Já existe uma categoria com esse nome')
       return
     }
-    setDraft((prev) => [...prev, { value, label: trimmed }])
+    setDraft((prev) => [...prev, { key: `new-${slug}`, name: trimmed, slug, image_url: null }])
     setNewLabel('')
   }
 
-  async function handleUpload(catValue: string, file: File) {
-    setUploading(catValue)
+  async function handleUpload(key: string, file: File) {
+    setUploading(key)
     try {
       const url = await uploadCategoryImage(file)
-      setDraft((prev) => prev.map((c) => (c.value === catValue ? { ...c, image: url } : c)))
+      patchRow(key, { image_url: url })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao enviar imagem')
     } finally {
@@ -47,18 +70,16 @@ export function CategoryConfig() {
     }
   }
 
-  function removeImage(catValue: string) {
-    setDraft((prev) => prev.map((c) => (c.value === catValue ? { ...c, image: undefined } : c)))
-  }
-
   async function handleSave() {
-    const invalid = draft.some((c) => !c.label.trim())
-    if (invalid) { toast.error('Preencha o nome de todas as categorias'); return }
+    if (draft.some((c) => !c.name.trim())) {
+      toast.error('Preencha o nome de todas as categorias')
+      return
+    }
     try {
-      await saveCategories(draft)
+      await saveAll(draft)
       toast.success('Categorias salvas!')
-    } catch {
-      toast.error('Erro ao salvar')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao salvar')
     }
   }
 
@@ -69,47 +90,63 @@ export function CategoryConfig() {
       <div className="mb-8">
         <h1 className="font-title text-2xl text-texto mb-1">Categorias</h1>
         <p className="font-body text-sm text-texto/60">
-          Edite os nomes, adicione fotos ou crie novas categorias. As categorias aparecem no menu e nos círculos da home.
+          Edite nomes, fotos e a ordem. As categorias aparecem no menu, nos círculos e no filtro da home.
+          Para colocar um produto em uma categoria, use o cadastro em Produtos.
         </p>
       </div>
 
       <div className="flex flex-col gap-3">
-        {draft.map((cat) => {
-          const meta = CATEGORY_META[cat.value]
-          const isUploading = uploading === cat.value
+        {draft.map((cat, index) => {
+          const meta = CATEGORY_META[cat.slug]
+          const isUploading = uploading === cat.key
 
           return (
-            <div key={cat.value} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-blush/40">
-              {/* Drag handle placeholder */}
-              <GripVertical size={16} className="text-texto/20 shrink-0" />
+            <div key={cat.key} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-blush/40">
+              <div className="flex flex-col shrink-0">
+                <button
+                  type="button"
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                  aria-label="Mover para cima"
+                  className="text-texto/30 hover:text-rosa disabled:opacity-20"
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(index, 1)}
+                  disabled={index === draft.length - 1}
+                  aria-label="Mover para baixo"
+                  className="text-texto/30 hover:text-rosa disabled:opacity-20"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              </div>
 
-              {/* Circle preview */}
               <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-blush/30 flex items-center justify-center">
-                {cat.image ? (
-                  <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
+                {cat.image_url ? (
+                  <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
                 ) : meta ? (
                   <div className={`w-full h-full bg-gradient-to-br ${meta.gradient} flex items-center justify-center`}>
                     <meta.icon size={18} className="text-white" strokeWidth={1.5} />
                   </div>
                 ) : (
-                  <span className="font-subtitle text-xs text-texto/40 uppercase">{cat.label[0]}</span>
+                  <span className="font-subtitle text-xs text-texto/40 uppercase">{cat.name[0]}</span>
                 )}
               </div>
 
-              {/* Name input */}
               <input
-                value={cat.label}
-                onChange={(e) => updateLabel(cat.value, e.target.value)}
+                value={cat.name}
+                onChange={(e) => patchRow(cat.key, { name: e.target.value })}
                 className="flex-1 min-w-0 rounded-lg border border-blush/60 px-3 py-2 font-body text-sm text-texto focus:outline-none focus:ring-2 focus:ring-rosa/40 focus:border-rosa"
                 placeholder="Nome da categoria"
               />
 
-              {/* Photo actions */}
               <div className="flex items-center gap-1 shrink-0">
-                {cat.image && (
+                {cat.image_url && (
                   <button
                     type="button"
-                    onClick={() => removeImage(cat.value)}
+                    onClick={() => patchRow(cat.key, { image_url: null })}
                     title="Remover foto"
                     className="p-1.5 rounded-lg text-texto/30 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
@@ -117,29 +154,28 @@ export function CategoryConfig() {
                   </button>
                 )}
                 <label
-                  htmlFor={`upload-${cat.value}`}
+                  htmlFor={`upload-${cat.key}`}
                   className={`flex items-center gap-1 cursor-pointer rounded-lg border border-blush/60 px-2.5 py-1.5 font-subtitle text-[11px] uppercase tracking-wider text-texto/60 hover:border-rosa hover:text-rosa transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
                 >
                   <Upload size={12} />
                   {isUploading ? '...' : 'Foto'}
                 </label>
                 <input
-                  id={`upload-${cat.value}`}
+                  id={`upload-${cat.key}`}
                   type="file"
                   accept="image/*"
                   className="hidden"
                   disabled={isUploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) handleUpload(cat.value, file)
+                    if (file) handleUpload(cat.key, file)
                     e.target.value = ''
                   }}
                 />
 
-                {/* Remove category */}
                 <button
                   type="button"
-                  onClick={() => removeCategory(cat.value)}
+                  onClick={() => removeCategory(cat)}
                   title="Remover categoria"
                   className="p-1.5 rounded-lg text-texto/30 hover:text-red-500 hover:bg-red-50 transition-colors"
                 >
@@ -151,7 +187,6 @@ export function CategoryConfig() {
         })}
       </div>
 
-      {/* Add new category */}
       <div className="flex gap-2 mt-4">
         <input
           value={newLabel}

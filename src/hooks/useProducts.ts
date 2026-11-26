@@ -2,6 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Product } from '@/types'
 
+type ProductRow = Product & { product_categories?: Array<{ category_id: string }> | null }
+
+/** Converte o join `product_categories(category_id)` em `category_ids`. */
+export function withCategoryIds(rows: ProductRow[]): Product[] {
+  return rows.map(({ product_categories, ...p }) => ({
+    ...p,
+    category_ids: (product_categories ?? []).map((pc) => pc.category_id),
+  }))
+}
+
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -14,7 +24,7 @@ export function useProducts() {
       setLoading(true)
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, product_categories(category_id)')
         .eq('active', true)
         .gt('stock', 0)
         .order('created_at', { ascending: false })
@@ -24,7 +34,7 @@ export function useProducts() {
       if (error) {
         setError(error.message)
       } else {
-        setProducts(data as Product[])
+        setProducts(withCategoryIds(data as ProductRow[]))
       }
       setLoading(false)
     }
@@ -47,7 +57,12 @@ export function useProducts() {
             if (!updated.active) {
               return prev.filter((product) => product.id !== updated.id)
             }
-            return prev.map((product) => (product.id === updated.id ? updated : product))
+            // O payload do Realtime não traz o join de categorias — preserva o que já temos.
+            return prev.map((product) =>
+              product.id === updated.id
+                ? { ...updated, category_ids: product.category_ids ?? [] }
+                : product,
+            )
           })
         },
       )

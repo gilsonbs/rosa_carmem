@@ -17,9 +17,19 @@ export function AnnouncementBannerConfig() {
     setForm({ ...form, messages: next })
   }
 
+  function setShortMessage(i: number, value: string) {
+    const next = [...(form.short_messages ?? ['', '', ''])] as [string, string, string]
+    next[i] = value
+    setForm({ ...form, short_messages: next })
+  }
+
   async function handleSave() {
-    await saveSettings(form)
-    toast.success('Banner salvo!')
+    try {
+      await saveSettings(form)
+      toast.success('Banner salvo!')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao salvar banner')
+    }
   }
 
   if (loading) {
@@ -74,17 +84,26 @@ export function AnnouncementBannerConfig() {
               <span className="shrink-0 w-6 h-6 rounded-full bg-rosa/10 text-rosa text-xs font-semibold font-subtitle flex items-center justify-center">
                 {i + 1}
               </span>
-              <input
-                type="text"
-                value={form.messages[i]}
-                onChange={(e) => setMessage(i, e.target.value)}
-                placeholder={`Mensagem ${i + 1}`}
-                className="flex-1 border border-blush/60 rounded-lg px-3 py-2 font-body text-sm text-texto placeholder:text-texto/30 focus:outline-none focus:border-rosa"
-              />
+              <div className="flex-1 flex flex-col gap-1.5">
+                <input
+                  type="text"
+                  value={form.messages[i]}
+                  onChange={(e) => setMessage(i, e.target.value)}
+                  placeholder={`Mensagem ${i + 1}`}
+                  className="border border-blush/60 rounded-lg px-3 py-2 font-body text-sm text-texto placeholder:text-texto/30 focus:outline-none focus:border-rosa"
+                />
+                <input
+                  type="text"
+                  value={form.short_messages?.[i] ?? ''}
+                  onChange={(e) => setShortMessage(i, e.target.value)}
+                  placeholder="Versão curta para celular (opcional)"
+                  className="border border-blush/40 rounded-lg px-3 py-1.5 font-body text-xs text-texto placeholder:text-texto/30 focus:outline-none focus:border-rosa"
+                />
+              </div>
             </div>
           ))}
           <p className="font-body text-xs text-texto/40">
-            Deixe em branco para ignorar. Mensagens vazias são puladas automaticamente.
+            Deixe em branco para ignorar. Mensagens vazias são puladas automaticamente. A versão curta aparece no celular; se vazia, usa a completa.
           </p>
         </div>
 
@@ -119,10 +138,8 @@ export function AnnouncementBannerConfig() {
               <p className="font-subtitle text-xs uppercase tracking-wider text-texto/50">
                 Preview
               </p>
-              <div className="w-full bg-rosa text-white py-2 px-4 rounded-lg text-center">
-                <p className="font-subtitle text-xs uppercase tracking-widest">
-                  {preview[0]}
-                </p>
+              <div className="w-full h-9 bg-rosa text-white px-4 rounded-lg flex items-center justify-center">
+                <p className="font-body text-[13px] whitespace-pre truncate">{preview[0]}</p>
               </div>
             </div>
           </>

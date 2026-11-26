@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCheckout } from '@/hooks/useCheckout'
 import { useCart } from '@/hooks/useCart'
@@ -9,6 +9,7 @@ import { ReviewStep } from '@/components/checkout/ReviewStep'
 import { OrderSummary } from '@/components/checkout/OrderSummary'
 import { PaymentBrick } from '@/components/checkout/PaymentBrick'
 import { Button } from '@/components/ui/Button'
+import { useDeliveryZones } from '@/hooks/useDeliveryZones'
 
 export function Checkout() {
   const navigate = useNavigate()
@@ -21,6 +22,11 @@ export function Checkout() {
   }, [items.length, navigate])
 
   const checkout = useCheckout(items)
+  const { zones, loading: zonesLoading } = useDeliveryZones()
+  const selectedZone = useMemo(
+    () => zones.find((z) => z.id === checkout.delivery.zone_id) ?? null,
+    [zones, checkout.delivery.zone_id],
+  )
 
   if (items.length === 0) {
     return null
@@ -37,7 +43,7 @@ export function Checkout() {
           <div className="bg-white/60 rounded-2xl p-6 md:p-8">
             <PaymentBrick
               orderId={checkout.orderId}
-              amount={totalPrice}
+              amount={checkout.paymentAmount ?? totalPrice + (selectedZone?.fee ?? 0)}
             />
           </div>
         </div>
@@ -78,6 +84,8 @@ export function Checkout() {
                 onAddressChange={checkout.updateAddress}
                 delivery={checkout.delivery}
                 onDeliveryChange={checkout.updateDelivery}
+                zones={zones}
+                zonesLoading={zonesLoading}
               />
               <div className="flex flex-col gap-3 mt-8">
                 <Button onClick={checkout.nextStep} size="lg" className="w-full">
@@ -101,6 +109,7 @@ export function Checkout() {
               customer={checkout.customer}
               address={checkout.address}
               delivery={checkout.delivery}
+              zone={selectedZone}
               submitting={checkout.submitting}
               onSubmit={checkout.submitCheckout}
               onBack={checkout.prevStep}

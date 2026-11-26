@@ -17,7 +17,34 @@ export interface Product {
   featured: boolean
   active: boolean
   stock: number
+  /** @deprecated substituída por product_categories (database/categories.sql) */
   category: string | null
+  /** IDs das categorias do produto (via product_categories). */
+  category_ids?: string[]
+  created_at: string
+}
+
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  image_url: string | null
+  display_order: number
+  created_at: string
+}
+
+export interface ProductCategory {
+  product_id: string
+  category_id: string
+}
+
+export interface DeliveryZone {
+  id: string
+  municipality: string
+  zone_name: string
+  fee: number
+  display_order: number
+  active: boolean
   created_at: string
 }
 
@@ -47,6 +74,9 @@ export interface Order {
   delivery_time: string | null
   mercadopago_preference_id: string | null
   mercadopago_payment_id: string | null
+  personal_message?: string | null
+  delivery_zone_id?: string | null
+  delivery_fee?: number | null
   created_at: string
 }
 
@@ -79,4 +109,5 @@ export interface OrderWithRelations extends Order {
   customer: Customer
   product: Product
   items: OrderItem[]
+  delivery_zone?: Pick<DeliveryZone, 'municipality' | 'zone_name'> | null
 }

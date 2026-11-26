@@ -27,6 +27,9 @@ interface OrderMetadata {
   delivery_date?: string
   delivery_time?: string
   address?: OrderAddressMetadata
+  delivery_zone_id?: string
+  delivery_fee?: number
+  personal_message?: string | null
 }
 
 /** Dados normalizados extraídos da notificação, independente de vir via Order ou Payment. */
@@ -222,6 +225,9 @@ webhookRouter.post('/mercadopago', async (req, res) => {
           zip_code: metadata.address.zip_code,
           delivery_date: metadata.delivery_date,
           delivery_time: metadata.delivery_time,
+          delivery_zone_id: metadata.delivery_zone_id ?? null,
+          delivery_fee: metadata.delivery_fee ?? 0,
+          personal_message: metadata.personal_message ?? null,
           mercadopago_payment_id: paymentIdStr,
         })
         .select('id, product_id')

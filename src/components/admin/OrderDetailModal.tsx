@@ -83,6 +83,12 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                     <span>{formatCurrency(item.unit_price * item.quantity)}</span>
                   </li>
                 ))}
+                {Number(order.delivery_fee ?? 0) > 0 && (
+                  <li className="flex justify-between text-texto/60">
+                    <span>Taxa de entrega</span>
+                    <span>{formatCurrency(Number(order.delivery_fee))}</span>
+                  </li>
+                )}
                 <li className="flex justify-between font-subtitle font-semibold text-texto border-t border-blush/40 pt-1 mt-1">
                   <span>Total</span>
                   <span>{formatCurrency(order.amount)}</span>
@@ -95,8 +101,28 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
             )}
           </section>
 
+          {order.personal_message?.trim() && (
+            <section className="rounded-xl bg-[#FDF0F3] border border-blush/60 px-4 py-3">
+              <h4 className="font-subtitle font-semibold text-rosa mb-1.5 flex items-center gap-1.5">
+                <span aria-hidden="true">💌</span> Mensagem do cartão
+              </h4>
+              <p className="text-texto/90 italic whitespace-pre-line leading-relaxed">
+                {order.personal_message}
+              </p>
+            </section>
+          )}
+
           <section>
             <h4 className="font-subtitle font-semibold text-texto mb-1">Entrega</h4>
+            {(order.delivery_zone || Number(order.delivery_fee ?? 0) > 0) && (
+              <p className="text-texto/80 mb-0.5">
+                📍 {order.delivery_zone
+                  ? `${order.delivery_zone.municipality} — ${order.delivery_zone.zone_name}`
+                  : 'Zona removida'}
+                {' · '}
+                {formatCurrency(Number(order.delivery_fee ?? 0))}
+              </p>
+            )}
             <p className="text-texto/80">
               {order.street}, {order.number}
               {order.complement ? ` - ${order.complement}` : ''} — {order.neighborhood},{' '}

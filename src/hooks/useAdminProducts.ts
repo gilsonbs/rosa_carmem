@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Product } from '@/types'
+import { withCategoryIds } from '@/hooks/useProducts'
 
 // Alias mantido para compatibilidade com páginas que importam ProductWithStock
 export type ProductWithStock = Product
@@ -12,7 +13,22 @@ export interface ProductInput {
   image_url: string | null
   featured: boolean
   active: boolean
-  category: string | null
+  category_ids: string[]
+}
+
+/** Substitui os vínculos produto↔categoria pelos selecionados. */
+async function syncProductCategories(productId: string, categoryIds: string[]) {
+  const { error: deleteError } = await supabase
+    .from('product_categories')
+    .delete()
+    .eq('product_id', productId)
+  if (deleteError) throw new Error(deleteError.message)
+
+  if (categoryIds.length === 0) return
+  const { error: insertError } = await supabase
+    .from('product_categories')
+    .insert(categoryIds.map((category_id) => ({ product_id: productId, category_id })))
+  if (insertError) throw new Error(insertError.message)
 }
 
 export function useAdminProducts() {
@@ -24,13 +40,13 @@ export function useAdminProducts() {
     setLoading(true)
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, product_categories(category_id)')
       .order('created_at', { ascending: false })
 
     if (error) {
       setError(error.message)
     } else {
-      setProducts((data as Product[]) ?? [])
+      setProducts(withCategoryIds((data ?? []) as Product[]))
       setError(null)
     }
     setLoading(false)
@@ -41,23 +57,23 @@ export function useAdminProducts() {
   }, [fetchProducts])
 
   async function createProduct(input: ProductInput) {
+    const { category_ids, ...base } = input
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...input, stock: 1 })
+      .insert({ ...base, stock: 1 })
       .select('*')
       .single()
 
     if (error) throw new Error(error.message)
-    setProducts((prev) => [data as Product, ...prev])
+    await syncProductCategories(data.id, category_ids)
+    setProducts((prev) => [{ ...(data as Product), category_ids }, ...prev])
   }
 
   async function updateProduct(id: string, input: ProductInput) {
-    // Omit category from payload when null — avoids "column not in schema cache"
-    // error on databases where migration_category.sql hasn't been run yet.
-    const { category, ...base } = input
-    const payload = category !== null ? { ...base, category } : base
-    const { error } = await supabase.from('products').update(payload).eq('id', id)
+    const { category_ids, ...base } = input
+    const { error } = await supabase.from('products').update(base).eq('id', id)
     if (error) throw new Error(error.message)
+    await syncProductCategories(id, category_ids)
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...input } : p)))
   }
 

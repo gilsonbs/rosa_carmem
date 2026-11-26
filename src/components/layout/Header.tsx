@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { CartDrawer } from '@/components/store/CartDrawer'
-import { useDynamicCategories } from '@/hooks/useDynamicCategories'
+import { useCategories } from '@/hooks/useCategories'
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
@@ -12,7 +12,7 @@ export function Header() {
   const [cartOpen, setCartOpen] = useState(false)
   const { totalItems } = useCart()
   const navigate = useNavigate()
-  const { categories } = useDynamicCategories()
+  const { categories } = useCategories()
 
   useEffect(() => {
     function handleScroll() {
@@ -22,12 +22,12 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  function goToCategory(value: string) {
-    navigate(`/?categoria=${value}`)
+  function goToCategory(slug: string) {
+    navigate(`/?categoria=${slug}`)
     setMenuOpen(false)
     setCategoriesOpen(false)
     setTimeout(() => {
-      document.getElementById(`cat-${value}`)?.scrollIntoView({ behavior: 'smooth' })
+      document.getElementById('presentes')?.scrollIntoView({ behavior: 'smooth' })
     }, 50)
   }
 
@@ -83,11 +83,11 @@ export function Header() {
                 <div className="border-t border-blush/30 my-1" />
                 {categories.map((cat) => (
                   <button
-                    key={cat.value}
-                    onClick={() => goToCategory(cat.value)}
+                    key={cat.id}
+                    onClick={() => goToCategory(cat.slug)}
                     className="w-full text-left px-4 py-2.5 text-xs font-subtitle uppercase tracking-wider text-texto/70 hover:text-rosa hover:bg-blush/20 transition-colors"
                   >
-                    {cat.label}
+                    {cat.name}
                   </button>
                 ))}
               </div>
@@ -144,11 +144,11 @@ export function Header() {
                 </button>
                 {categories.map((cat) => (
                   <button
-                    key={cat.value}
-                    onClick={() => goToCategory(cat.value)}
+                    key={cat.id}
+                    onClick={() => goToCategory(cat.slug)}
                     className="py-1.5 text-xs text-texto/60 hover:text-rosa uppercase tracking-wider"
                   >
-                    {cat.label}
+                    {cat.name}
                   </button>
                 ))}
               </div>

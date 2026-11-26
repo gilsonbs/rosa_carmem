@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useProducts } from '@/hooks/useProducts'
 import { useHeroSettings } from '@/hooks/useHeroSettings'
-import { useDynamicCategories } from '@/hooks/useDynamicCategories'
+import { useCategories } from '@/hooks/useCategories'
 import { HeroCarousel } from '@/components/store/HeroCarousel'
 import { CategoryStrip } from '@/components/store/CategoryStrip'
 import { FeaturedProducts } from '@/components/store/FeaturedProducts'
@@ -10,34 +11,41 @@ import { ProductModal } from '@/components/store/ProductModal'
 import { CartDrawer } from '@/components/store/CartDrawer'
 import type { Product } from '@/types'
 
+const pillBase =
+  'shrink-0 rounded-full border px-4 py-1.5 font-subtitle text-xs uppercase tracking-wider transition-colors whitespace-nowrap'
+const pillActive = 'bg-rosa border-rosa text-white'
+const pillInactive = 'border-rosa text-rosa bg-white hover:bg-rosa/10'
+
 export function Home() {
   const { products, featuredProducts, loading, error } = useProducts()
   const { settings: heroSettings, heroProducts } = useHeroSettings()
-  const { categories } = useDynamicCategories()
+  const { categories } = useCategories()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
 
-  // Group products by category
-  const productsByCategory = useMemo(() => {
-    const grouped: Record<string, Product[]> = {}
-    for (const p of products) {
-      const key = p.category ?? ''
-      if (!grouped[key]) grouped[key] = []
-      grouped[key].push(p)
-    }
-    return grouped
-  }, [products])
+  // Só mostra no filtro as categorias que têm algum produto disponível
+  const categoriesWithProducts = useMemo(() => {
+    const used = new Set(products.flatMap((p) => p.category_ids ?? []))
+    return categories.filter((c) => used.has(c.id))
+  }, [categories, products])
 
-  // Only categories that actually have products, in configured order
-  const categoriesWithProducts = useMemo(
-    () => categories.filter((cat) => (productsByCategory[cat.value]?.length ?? 0) > 0),
-    [categories, productsByCategory],
+  // Categoria selecionada vem da URL (?categoria=slug), assim o menu do
+  // header e os círculos da CategoryStrip controlam o mesmo filtro.
+  const activeSlug = searchParams.get('categoria')
+  const activeCategory = categories.find((c) => c.slug === activeSlug) ?? null
+
+  const visibleProducts = useMemo(
+    () =>
+      activeCategory
+        ? products.filter((p) => p.category_ids?.includes(activeCategory.id))
+        : products,
+    [products, activeCategory],
   )
 
-  // Products with no category assigned
-  const uncategorized = productsByCategory[''] ?? []
-
-  const bgFor = (index: number) => (index % 2 === 0 ? 'bg-fundo' : 'bg-[#FDF0F3]')
+  function selectCategory(slug: string | null) {
+    setSearchParams(slug ? { categoria: slug } : {}, { replace: true, preventScrollReset: true })
+  }
 
   return (
     <>
@@ -49,9 +57,8 @@ export function Home() {
         onSelectProduct={setSelectedProduct}
       />
 
-      <CategoryStrip />
+      <CategoryStrip categories={categoriesWithProducts} />
 
-      {/* Destaques */}
       {featuredProducts.length > 0 && (
         <section className="py-16 px-6 bg-[#FDF0F3]">
           <div className="max-w-6xl mx-auto">
@@ -60,54 +67,59 @@ export function Home() {
         </section>
       )}
 
-      {error && (
-        <p className="text-center text-red-600 font-body py-6">{error}</p>
-      )}
+      {error && <p className="text-center text-red-600 font-body py-6">{error}</p>}
 
-      {/* Seção por categoria */}
-      {categoriesWithProducts.map((cat, i) => (
-        <section
-          key={cat.value}
-          id={`cat-${cat.value}`}
-          className={`py-16 px-6 ${bgFor(i)}`}
-        >
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-10">
-              <p className="font-subtitle text-xs uppercase tracking-[0.2em] text-dourado mb-2">
-                Categoria
-              </p>
-              <h2 className="font-title text-3xl md:text-4xl text-texto">{cat.label}</h2>
-            </div>
-            <ProductGrid
-              products={productsByCategory[cat.value]}
-              loading={false}
-              onSelectProduct={setSelectedProduct}
-            />
+      <section id="presentes" className="py-16 px-6 bg-fundo scroll-mt-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="font-subtitle text-xs uppercase tracking-[0.2em] text-dourado mb-2">
+              A Vitrine Completa
+            </p>
+            <h2 className="font-title text-3xl md:text-4xl text-texto">
+              {activeCategory ? activeCategory.name : 'Todos os Presentes'}
+            </h2>
           </div>
-        </section>
-      ))}
 
-      {/* Produtos sem categoria */}
-      {(loading || uncategorized.length > 0) && (
-        <section
-          id="presentes"
-          className={`py-16 px-6 ${bgFor(categoriesWithProducts.length)}`}
-        >
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-10">
-              <p className="font-subtitle text-xs uppercase tracking-[0.2em] text-dourado mb-2">
-                A Vitrine Completa
-              </p>
-              <h2 className="font-title text-3xl md:text-4xl text-texto">Todos os Presentes</h2>
+          {categoriesWithProducts.length > 0 && (
+            <div
+              role="tablist"
+              aria-label="Filtrar por categoria"
+              className="flex gap-2 overflow-x-auto scrollbar-hide justify-start md:justify-center pb-2 mb-10 -mx-6 px-6"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!activeCategory}
+                onClick={() => selectCategory(null)}
+                className={`${pillBase} ${!activeCategory ? pillActive : pillInactive}`}
+              >
+                Todos
+              </button>
+              {categoriesWithProducts.map((cat) => {
+                const isActive = activeCategory?.id === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => selectCategory(isActive ? null : cat.slug)}
+                    className={`${pillBase} ${isActive ? pillActive : pillInactive}`}
+                  >
+                    {cat.name}
+                  </button>
+                )
+              })}
             </div>
-            <ProductGrid
-              products={uncategorized}
-              loading={loading}
-              onSelectProduct={setSelectedProduct}
-            />
-          </div>
-        </section>
-      )}
+          )}
+
+          <ProductGrid
+            products={visibleProducts}
+            loading={loading}
+            onSelectProduct={setSelectedProduct}
+          />
+        </div>
+      </section>
 
       <ProductModal
         product={selectedProduct}

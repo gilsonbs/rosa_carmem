@@ -28,6 +28,9 @@ export interface ManualOrderInput {
   }
   delivery_date: string
   delivery_time: string
+  delivery_zone_id?: string | null
+  delivery_fee?: number
+  personal_message?: string | null
 }
 
 export function useOrders() {
@@ -37,6 +40,21 @@ export function useOrders() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
+
+    // Tenta buscar com zona de entrega (requer delivery_zones.sql + migration_order_extras.sql).
+    const { data: fullData, error: fullError } = await supabase
+      .from('orders')
+      .select(
+        '*, customer:customers(*), product:products(*), items:order_items(*, product:products(*)), delivery_zone:delivery_zones(municipality, zone_name)',
+      )
+      .order('created_at', { ascending: false })
+
+    if (!fullError) {
+      setOrders(fullData as unknown as OrderWithRelations[])
+      setError(null)
+      setLoading(false)
+      return
+    }
 
     // Tenta buscar com order_items (requer migration_order_items.sql).
     // Se a tabela ainda não existir, faz fallback sem o join.
@@ -155,6 +173,9 @@ export function useOrders() {
         zip_code: input.address.zip_code,
         delivery_date: input.delivery_date,
         delivery_time: input.delivery_time,
+        ...(input.delivery_zone_id ? { delivery_zone_id: input.delivery_zone_id } : {}),
+        ...(input.delivery_fee ? { delivery_fee: input.delivery_fee } : {}),
+        ...(input.personal_message ? { personal_message: input.personal_message } : {}),
       })
       .select('id')
       .single()

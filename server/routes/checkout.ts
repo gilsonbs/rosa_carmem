@@ -34,7 +34,11 @@ interface CreatePreferenceBody {
   address: AddressInput
   delivery_date: string
   delivery_time: string
+  delivery_zone_id: string
+  personal_message?: string
 }
+
+const PERSONAL_MESSAGE_MAX = 300
 
 function isValidBody(body: Partial<CreatePreferenceBody>): body is CreatePreferenceBody {
   return Boolean(
@@ -57,7 +61,10 @@ function isValidBody(body: Partial<CreatePreferenceBody>): body is CreatePrefere
       body.address?.state &&
       body.address?.zip_code &&
       body.delivery_date &&
-      body.delivery_time,
+      body.delivery_time &&
+      typeof body.delivery_zone_id === 'string' &&
+      body.delivery_zone_id.length > 0 &&
+      (body.personal_message === undefined || typeof body.personal_message === 'string'),
   )
 }
 
@@ -92,7 +99,22 @@ checkoutRouter.post('/create-preference', async (req, res) => {
     return
   }
 
-  const { items: cartItems, customer, address, delivery_date, delivery_time } = body
+  const { items: cartItems, customer, address, delivery_date, delivery_time, delivery_zone_id } = body
+  const personalMessage = body.personal_message?.trim().slice(0, PERSONAL_MESSAGE_MAX) || null
+
+  // Taxa de entrega sempre vem do banco — nunca confiar em valor enviado pelo cliente.
+  const { data: zone, error: zoneError } = await supabaseAdmin
+    .from('delivery_zones')
+    .select('id, municipality, zone_name, fee, active')
+    .eq('id', delivery_zone_id)
+    .maybeSingle()
+
+  if (zoneError || !zone || !zone.active) {
+    res.status(400).json({ error: 'Zona de entrega inválida ou indisponível' })
+    return
+  }
+
+  const deliveryFee = Number(zone.fee)
 
   // Carrega e valida cada produto (active + stock)
   const productIds = [...new Set(cartItems.map((i) => i.product_id))]
@@ -132,10 +154,11 @@ checkoutRouter.post('/create-preference', async (req, res) => {
 
   // Produto principal = primeiro item (para product_id da tabela orders — compat. com dados antigos)
   const firstProduct = productMap.get(cartItems[0].product_id)!
-  const totalAmount = cartItems.reduce(
+  const productsAmount = cartItems.reduce(
     (sum, i) => sum + Number(productMap.get(i.product_id)!.price) * i.quantity,
     0,
   )
+  const totalAmount = Math.round((productsAmount + deliveryFee) * 100) / 100
 
   const { data: orderRow, error: orderError } = await supabaseAdmin
     .from('orders')
@@ -152,6 +175,9 @@ checkoutRouter.post('/create-preference', async (req, res) => {
       zip_code: address.zip_code,
       delivery_date,
       delivery_time,
+      delivery_zone_id: zone.id,
+      delivery_fee: deliveryFee,
+      personal_message: personalMessage,
     })
     .select('id')
     .single()
@@ -188,7 +214,19 @@ checkoutRouter.post('/create-preference', async (req, res) => {
             unit_price: Number(p.price),
             currency_id: 'BRL',
           }
-        }),
+        }).concat(
+          deliveryFee > 0
+            ? [
+                {
+                  id: `delivery-${zone.id}`,
+                  title: `Taxa de entrega — ${zone.municipality} (${zone.zone_name})`,
+                  quantity: 1,
+                  unit_price: deliveryFee,
+                  currency_id: 'BRL',
+                },
+              ]
+            : [],
+        ),
         payer: {
           name: customer.name,
           email: customer.email,
@@ -208,6 +246,9 @@ checkoutRouter.post('/create-preference', async (req, res) => {
           delivery_date,
           delivery_time,
           address,
+          delivery_zone_id: zone.id,
+          delivery_fee: deliveryFee,
+          personal_message: personalMessage,
         },
       },
     })
@@ -221,6 +262,7 @@ checkoutRouter.post('/create-preference', async (req, res) => {
       order_id: orderRow.id,
       preference_id: preference.id,
       init_point: preference.init_point,
+      amount: totalAmount,
     })
   } catch (mpError) {
     console.error('Erro ao criar preferência no Mercado Pago:', mpError)
@@ -239,10 +281,29 @@ checkoutRouter.post('/process-payment', async (req, res) => {
     return
   }
 
+  // O valor cobrado é sempre o total salvo no pedido (produtos + entrega),
+  // nunca o transaction_amount enviado pelo navegador.
+  const { data: orderRow, error: orderError } = await supabaseAdmin
+    .from('orders')
+    .select('amount, payment_status')
+    .eq('id', order_id)
+    .maybeSingle()
+
+  if (orderError || !orderRow) {
+    res.status(404).json({ error: 'Pedido não encontrado' })
+    return
+  }
+
+  if (orderRow.payment_status === 'approved') {
+    res.status(409).json({ error: 'Este pedido já foi pago' })
+    return
+  }
+
   try {
     const payment = await paymentClient.create({
       body: {
         ...form_data,
+        transaction_amount: Number(orderRow.amount),
         notification_url: `${apiUrl}/api/webhook/mercadopago`,
         external_reference: order_id,
       } as Parameters<typeof paymentClient.create>[0]['body'],

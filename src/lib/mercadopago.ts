@@ -31,12 +31,16 @@ export interface CreatePreferenceInput {
   }
   delivery_date: string
   delivery_time: string
+  delivery_zone_id: string
+  personal_message?: string
 }
 
 export interface CreatePreferenceResponse {
   order_id: string
   preference_id: string
   init_point: string
+  /** Total calculado pelo servidor (produtos + entrega). */
+  amount: number
 }
 
 export async function createPaymentPreference(

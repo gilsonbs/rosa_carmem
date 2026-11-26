@@ -23,7 +23,12 @@ export interface AddressFormData {
 export interface DeliveryFormData {
   date: string
   time: string
+  zone_id: string
+  /** Mensagem opcional para o cartão que acompanha o presente. */
+  personal_message: string
 }
+
+export const PERSONAL_MESSAGE_MAX = 300
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const DELIVERY_TIME_OPTIONS = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00']
@@ -38,7 +43,7 @@ const initialAddress: AddressFormData = {
   state: '',
   zip_code: '',
 }
-const initialDelivery: DeliveryFormData = { date: '', time: '' }
+const initialDelivery: DeliveryFormData = { date: '', time: '', zone_id: '', personal_message: '' }
 
 export function useCheckout(cartItems: CartItem[]) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
@@ -48,6 +53,7 @@ export function useCheckout(cartItems: CartItem[]) {
   const [submitting, setSubmitting] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
   const [preferenceId, setPreferenceId] = useState<string | null>(null)
+  const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
 
   function updateCustomer(patch: Partial<CustomerFormData>) {
     setCustomer((prev) => ({ ...prev, ...patch }))
@@ -88,6 +94,14 @@ export function useCheckout(cartItems: CartItem[]) {
     }
     if (!address.city.trim() || !address.state.trim()) {
       toast.error('Preencha cidade e estado')
+      return false
+    }
+    if (!delivery.zone_id) {
+      toast.error('Selecione a zona de entrega')
+      return false
+    }
+    if (delivery.personal_message.length > PERSONAL_MESSAGE_MAX) {
+      toast.error(`A mensagem do cartão pode ter no máximo ${PERSONAL_MESSAGE_MAX} caracteres`)
       return false
     }
     if (!delivery.date) {
@@ -132,7 +146,7 @@ export function useCheckout(cartItems: CartItem[]) {
 
     setSubmitting(true)
     try {
-      const { order_id, preference_id } = await createPaymentPreference({
+      const { order_id, preference_id, amount } = await createPaymentPreference({
         items: cartItems.map((i) => ({ product_id: i.product.id, quantity: i.quantity })),
         customer: {
           name: customer.name.trim(),
@@ -150,10 +164,13 @@ export function useCheckout(cartItems: CartItem[]) {
         },
         delivery_date: delivery.date,
         delivery_time: delivery.time,
+        delivery_zone_id: delivery.zone_id,
+        personal_message: delivery.personal_message.trim() || undefined,
       })
 
       setOrderId(order_id)
       setPreferenceId(preference_id)
+      setPaymentAmount(amount)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao processar pagamento'
       toast.error(message)
@@ -170,6 +187,7 @@ export function useCheckout(cartItems: CartItem[]) {
     submitting,
     orderId,
     preferenceId,
+    paymentAmount,
     updateCustomer,
     updateAddress,
     updateDelivery,

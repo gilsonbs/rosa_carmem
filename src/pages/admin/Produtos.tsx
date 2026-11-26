@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Switch } from '@/components/ui/Switch'
 import { formatCurrency } from '@/utils/format'
+import { useCategories } from '@/hooks/useCategories'
 import type { Product } from '@/types'
 
 export function Produtos() {
@@ -23,6 +24,8 @@ export function Produtos() {
     uploadProductImage,
   } = useAdminProducts()
 
+  const { categories } = useCategories()
+  const categoryName = new Map(categories.map((c) => [c.id, c.name]))
   const [formOpen, setFormOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
@@ -97,6 +100,7 @@ export function Produtos() {
               <tr className="border-b border-blush/60 text-left text-texto/60">
                 <th className="px-4 py-3 font-subtitle font-medium">Foto</th>
                 <th className="px-4 py-3 font-subtitle font-medium">Nome</th>
+                <th className="px-4 py-3 font-subtitle font-medium">Categorias</th>
                 <th className="px-4 py-3 font-subtitle font-medium">Preço</th>
                 <th className="px-4 py-3 font-subtitle font-medium">Destaque</th>
                 <th className="px-4 py-3 font-subtitle font-medium">Status</th>
@@ -118,6 +122,20 @@ export function Produtos() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-texto">{product.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1 max-w-[220px]">
+                      {(product.category_ids ?? [])
+                        .filter((id) => categoryName.has(id))
+                        .map((id) => (
+                          <Badge key={id} tone="rosa">
+                            {categoryName.get(id)}
+                          </Badge>
+                        ))}
+                      {(product.category_ids ?? []).filter((id) => categoryName.has(id)).length === 0 && (
+                        <span className="text-texto/30 text-xs">—</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-texto">{formatCurrency(product.price)}</td>
                   <td className="px-4 py-3">
                     <Switch
